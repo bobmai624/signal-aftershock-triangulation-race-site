@@ -1,0 +1,2655 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signal Aftershock: Triangulation Race</title>
+    <style>
+:root {
+  --bg: #11100e;
+  --panel: #171d1b;
+  --panel-2: #202621;
+  --line: rgba(218, 208, 181, 0.24);
+  --line-strong: rgba(240, 228, 197, 0.54);
+  --text: #f5efe2;
+  --muted: #b9aa8e;
+  --cyan: #3ad7c7;
+  --orange: #f39a38;
+  --green: #76d66d;
+  --danger: #e85e4f;
+  --yellow: #ffd166;
+  --ash: #81776a;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(232, 94, 79, 0.12), transparent 24%),
+    radial-gradient(circle at 84% 76%, rgba(58, 215, 199, 0.11), transparent 25%),
+    linear-gradient(rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+    var(--bg);
+  background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+  color: var(--text);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.screen {
+  min-height: 100vh;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.start-screen,
+.end-screen {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 34px 20px;
+  text-align: center;
+}
+
+.start-screen {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255, 84, 52, 0.05) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(57, 227, 255, 0.05) 2px, transparent 2px),
+    radial-gradient(circle at 50% 20%, rgba(57, 227, 255, 0.18), transparent 28%),
+    radial-gradient(circle at 50% 48%, rgba(255, 84, 52, 0.16), transparent 36%);
+  background-size: 58px 58px, 58px 58px, 100% 100%, 100% 100%;
+}
+
+.start-screen::before,
+.start-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.start-screen::before {
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.04) 0,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  mix-blend-mode: screen;
+  opacity: 0.36;
+  animation: scanDrift 5s linear infinite;
+}
+
+.start-screen::after {
+  z-index: 0;
+  background:
+    linear-gradient(110deg, transparent 0%, rgba(57, 227, 255, 0.08) 46%, rgba(255, 255, 255, 0.16) 50%, transparent 56%),
+    radial-gradient(circle at 50% 28%, rgba(255, 84, 52, 0.2), transparent 18%);
+  opacity: 0.56;
+  animation: emergencySweep 4.8s ease-in-out infinite;
+}
+
+.start-screen > * {
+  position: relative;
+  z-index: 1;
+}
+
+.alert-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shock-ring,
+.signal-sweep {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+.shock-ring {
+  left: 50%;
+  top: 26%;
+  width: 360px;
+  height: 360px;
+  border: 2px solid rgba(57, 227, 255, 0.28);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  animation: shockPulse 2.8s ease-out infinite;
+}
+
+.ring-b {
+  border-color: rgba(255, 84, 52, 0.2);
+  animation-delay: 1.2s;
+}
+
+.signal-sweep {
+  left: -20%;
+  width: 140%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(57, 227, 255, 0.8), rgba(255, 209, 102, 0.7), transparent);
+  filter: drop-shadow(0 0 12px rgba(57, 227, 255, 0.75));
+}
+
+.sweep-a {
+  top: 31%;
+  transform: rotate(-9deg);
+  animation: sweepMove 3.4s ease-in-out infinite;
+}
+
+.sweep-b {
+  top: 55%;
+  transform: rotate(7deg);
+  animation: sweepMove 4.2s ease-in-out infinite reverse;
+}
+
+.brand-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 230px;
+  height: 168px;
+}
+
+.game-logo-mark {
+  width: 430px;
+  height: 430px;
+  margin-bottom: -26px;
+  isolation: isolate;
+}
+
+.game-logo-mark::before,
+.game-logo-mark::after {
+  content: "";
+  position: absolute;
+  inset: 12%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.game-logo-mark::before {
+  border: 2px solid rgba(57, 227, 255, 0.2);
+  animation: logoRingPulse 3.2s ease-out infinite;
+}
+
+.game-logo-mark::after {
+  background: radial-gradient(circle, rgba(255, 84, 52, 0.24), transparent 64%);
+  filter: blur(18px);
+  animation: alertGlow 1.8s ease-in-out infinite;
+}
+
+.brand-mark img {
+  width: 132px;
+  height: 132px;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 12px rgba(58, 215, 199, 0.62))
+    drop-shadow(0 0 32px rgba(232, 94, 79, 0.18));
+}
+
+.game-logo-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 18px rgba(57, 227, 255, 0.48))
+    drop-shadow(0 0 34px rgba(255, 84, 52, 0.26))
+    drop-shadow(0 18px 24px rgba(0, 0, 0, 0.72));
+  animation: logoAlarmPulse 2.6s ease-in-out infinite;
+}
+
+.signal-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-mark svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.brand-mark circle,
+.brand-mark path,
+.brand-mark text {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 9px rgba(58, 215, 199, 0.55));
+}
+
+.incident-code {
+  border: 1px solid rgba(232, 94, 79, 0.38);
+  background: rgba(232, 94, 79, 0.12);
+  color: #ffd9bc;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.asset-credit {
+  margin: 4px 0 0;
+  color: rgba(185, 170, 142, 0.68);
+  font-size: 0.72rem;
+}
+
+.alarm-kicker {
+  border: 1px solid rgba(255, 84, 52, 0.4);
+  background: rgba(255, 84, 52, 0.1);
+  padding: 7px 12px;
+  color: #ffd1a8;
+  box-shadow: 0 0 18px rgba(255, 84, 52, 0.12);
+}
+
+.brand-mark circle {
+  fill: #18221f;
+}
+
+.brand-mark .crack {
+  stroke: var(--danger);
+}
+
+.brand-mark .pulse {
+  stroke: var(--orange);
+  stroke-width: 3.5;
+}
+
+.brand-mark text {
+  fill: var(--yellow);
+  stroke: none;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-anchor: middle;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--orange);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+.start-screen h1,
+.end-screen h1 {
+  max-width: 880px;
+  margin-bottom: 0;
+  font-size: 4.7rem;
+  line-height: 0.95;
+}
+
+.start-screen h1 {
+  max-width: 1000px;
+  color: #fff7ef;
+  font-family: Impact, "Arial Black", sans-serif;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-shadow:
+    0 4px 0 #46140a,
+    0 0 14px rgba(255, 84, 52, 0.55),
+    0 0 32px rgba(57, 227, 255, 0.32);
+}
+
+.start-screen h1::after {
+  content: "MAYDAY SIGNAL BREACH";
+  display: block;
+  margin-top: 10px;
+  color: var(--danger);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+  text-shadow: 0 0 14px rgba(255, 84, 52, 0.65);
+  animation: redAlertBlink 1.3s steps(2, end) infinite;
+}
+
+.subtitle {
+  max-width: 740px;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
+.story-intro {
+  max-width: 980px;
+  color: #ffe5c0;
+  font-size: 1.42rem;
+  font-weight: 800;
+  line-height: 1.45;
+  text-shadow: 0 0 18px rgba(255, 84, 52, 0.2);
+}
+
+.mission-brief {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: min(940px, 100%);
+  text-align: left;
+}
+
+.mission-brief > div {
+  border-top: 2px solid rgba(58, 215, 199, 0.46);
+  background: rgba(23, 29, 27, 0.72);
+  padding: 14px;
+}
+
+.mission-brief strong {
+  display: block;
+  margin: 6px 0 7px;
+  color: var(--text);
+}
+
+.mission-brief p,
+.victory-rules p,
+.win-explain {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.brief-code {
+  color: var(--yellow);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.player-select,
+.start-actions,
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.choice-button,
+.primary-button,
+.secondary-button {
+  min-height: 44px;
+  border-radius: var(--radius);
+  padding: 0 18px;
+  color: var(--text);
+}
+
+.choice-button {
+  border: 1px solid var(--line);
+  background: #1a211e;
+}
+
+.choice-button.selected {
+  border-color: var(--cyan);
+  box-shadow: inset 0 0 0 1px rgba(58, 215, 199, 0.35), 0 0 18px rgba(58, 215, 199, 0.18);
+}
+
+.primary-button {
+  background: var(--cyan);
+  color: #061411;
+  font-weight: 800;
+  box-shadow: 0 0 22px rgba(58, 215, 199, 0.22);
+}
+
+.secondary-button {
+  border: 1px solid var(--line);
+  background: rgba(30, 35, 31, 0.86);
+}
+
+.compact {
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.full {
+  width: 100%;
+}
+
+.game-screen {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  padding: 18px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 70px;
+}
+
+.game-header h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+}
+
+.logo-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mini-logo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 62px;
+}
+
+.mini-logo img {
+  width: 70px;
+  height: 62px;
+  object-fit: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 8px rgba(58, 215, 199, 0.55));
+}
+
+.mini-logo svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mini-logo path,
+.mini-logo circle {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 5px rgba(58, 215, 199, 0.55));
+}
+
+.mini-logo .crack {
+  stroke: var(--danger);
+}
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) 340px;
+  gap: 16px;
+  min-height: 0;
+}
+
+.board-panel,
+.control-panel,
+.modal,
+.final-scores {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(23, 29, 27, 0.93);
+  box-shadow: 0 16px 60px rgba(0, 0, 0, 0.28);
+}
+
+.board-panel {
+  min-height: 650px;
+  overflow: hidden;
+  position: relative;
+}
+
+.board-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(58, 215, 199, 0.08), transparent 36%),
+    linear-gradient(rgba(243, 154, 56, 0.08), transparent 28%),
+    radial-gradient(circle at 66% 24%, rgba(232, 94, 79, 0.09), transparent 22%);
+  pointer-events: none;
+}
+
+.board-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 650px;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  min-height: 650px;
+}
+
+.status-block {
+  border: 1px solid rgba(218, 208, 181, 0.16);
+  border-radius: var(--radius);
+  background: rgba(18, 22, 20, 0.72);
+  padding: 12px;
+}
+
+.mission-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.progress-bar {
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(218, 208, 181, 0.22);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--yellow));
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.current-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.team-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  box-shadow: 0 0 16px currentColor;
+}
+
+.instruction-text {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.dice-block {
+  display: grid;
+  gap: 10px;
+}
+
+.dice-display {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: #1d0f0c;
+  color: var(--danger);
+  font-size: 2rem;
+  font-weight: 900;
+  text-shadow: 0 0 14px rgba(232, 94, 79, 0.58);
+}
+
+.dice-display.rolling {
+  animation: dicePulse 0.34s ease;
+}
+
+@keyframes dicePulse {
+  0% {
+    transform: scale(0.96) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+.debug-dice {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  text-align: left;
+}
+
+.debug-dice select {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #151a17;
+  color: var(--text);
+  padding: 0 10px;
+}
+
+.score-list,
+.turn-summary,
+.final-scores {
+  display: grid;
+  gap: 8px;
+}
+
+.score-row,
+.turn-row,
+.final-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 34px;
+  border-bottom: 1px solid rgba(218, 208, 181, 0.12);
+  color: var(--text);
+}
+
+.score-row:last-child,
+.turn-row:last-child,
+.final-row:last-child {
+  border-bottom: 0;
+}
+
+.team-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.score-value {
+  font-weight: 900;
+}
+
+.game-log {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  max-height: 172px;
+  margin: 0;
+  padding-left: 18px;
+  overflow: auto;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.victory-rules {
+  border-color: rgba(255, 209, 102, 0.24);
+}
+
+.victory-rules p + p {
+  margin-top: 7px;
+}
+
+.victory-rules strong {
+  color: var(--yellow);
+}
+
+.site-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.site-grid span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(218, 208, 181, 0.14);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 0.83rem;
+  font-weight: 800;
+}
+
+.legend-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  background: var(--yellow);
+  filter: drop-shadow(0 0 5px rgba(255, 209, 102, 0.35));
+}
+
+.shelter-icon {
+  clip-path: polygon(50% 8%, 95% 46%, 82% 46%, 82% 92%, 60% 92%, 60% 65%, 40% 65%, 40% 92%, 18% 92%, 18% 46%, 5% 46%);
+}
+
+.hospital-icon {
+  clip-path: polygon(38% 5%, 62% 5%, 62% 38%, 95% 38%, 95% 62%, 62% 62%, 62% 95%, 38% 95%, 38% 62%, 5% 62%, 5% 38%, 38% 38%);
+}
+
+.relay-icon {
+  clip-path: polygon(48% 98%, 52% 98%, 52% 45%, 66% 30%, 58% 23%, 50% 31%, 42% 23%, 34% 30%, 48% 45%, 48% 98%, 18% 98%, 18% 88%, 38% 88%, 38% 56%, 8% 28%, 15% 20%, 50% 52%, 85% 20%, 92% 28%, 62% 56%, 62% 88%, 82% 88%, 82% 98%);
+}
+
+.power-icon {
+  clip-path: polygon(60% 0, 18% 56%, 46% 56%, 34% 100%, 84% 38%, 55% 38%);
+}
+
+.supply-icon {
+  clip-path: polygon(12% 25%, 50% 6%, 88% 25%, 88% 84%, 50% 100%, 12% 84%);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 7, 10, 0.72);
+}
+
+.modal {
+  width: min(560px, 100%);
+  max-height: min(760px, 88vh);
+  overflow: auto;
+  padding: 20px;
+  position: relative;
+}
+
+.modal h2 {
+  margin-right: 36px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  background: #202621;
+  color: var(--text);
+}
+
+.modal-body {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.modal-body ol {
+  padding-left: 22px;
+}
+
+.turn-gains {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.gain-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(218, 208, 181, 0.18);
+  border-left: 4px solid var(--team-color);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+  padding: 9px 11px;
+}
+
+.gain-row span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.gain-row strong {
+  color: var(--yellow);
+  font-size: 1.12rem;
+}
+
+.result-details {
+  display: grid;
+  gap: 9px;
+  margin: 10px 0 16px;
+  padding-left: 22px;
+}
+
+.result-details li {
+  color: var(--muted);
+}
+
+.result-details strong {
+  color: var(--text);
+}
+
+.next-turn-button {
+  margin-top: 8px;
+}
+
+.final-scores {
+  width: min(620px, 100%);
+  padding: 16px;
+  text-align: left;
+}
+
+.potential-edge {
+  stroke: rgba(218, 208, 181, 0.22);
+  stroke-width: 1.25;
+  stroke-dasharray: 5 8;
+}
+
+.cell-fill {
+  stroke: rgba(245, 239, 226, 0.08);
+  stroke-width: 1;
+  transition: fill 0.22s ease, opacity 0.22s ease;
+}
+
+.cell-fill.claim-flash {
+  animation: claimFlash 0.75s ease;
+}
+
+@keyframes claimFlash {
+  0% {
+    opacity: 0.95;
+    filter: brightness(1.6);
+  }
+  100% {
+    opacity: 0.38;
+    filter: brightness(1);
+  }
+}
+
+.claimed-edge {
+  stroke-width: 7;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 7px currentColor);
+}
+
+.legal-line {
+  stroke-width: 13;
+  stroke-linecap: round;
+  opacity: 0.24;
+  cursor: pointer;
+  transition: opacity 0.14s ease, stroke-width 0.14s ease;
+}
+
+.legal-line:hover,
+.legal-line:focus {
+  opacity: 0.62;
+  stroke-width: 16;
+}
+
+.node-dot {
+  fill: #f4dfb3;
+  opacity: 0.72;
+}
+
+.site-marker circle {
+  fill: #151713;
+  stroke: var(--yellow);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(255, 212, 93, 0.5));
+}
+
+.site-icon {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.site-marker.collected {
+  opacity: 0.42;
+}
+
+.city-label {
+  fill: rgba(245, 239, 226, 0.26);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hazard-line {
+  fill: none;
+  stroke: rgba(232, 94, 79, 0.42);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 8 7;
+}
+
+.map-note {
+  fill: rgba(255, 209, 102, 0.56);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.win-explain {
+  max-width: 620px;
+}
+
+@keyframes scanDrift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 56px;
+  }
+}
+
+@keyframes emergencySweep {
+  0%,
+  100% {
+    transform: translateX(-18%);
+    opacity: 0.28;
+  }
+  50% {
+    transform: translateX(18%);
+    opacity: 0.7;
+  }
+}
+
+@keyframes sweepMove {
+  0% {
+    left: -42%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.88;
+  }
+  100% {
+    left: 28%;
+    opacity: 0;
+  }
+}
+
+@keyframes shockPulse {
+  0% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.62);
+  }
+  70% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+@keyframes logoRingPulse {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.78);
+  }
+  80% {
+    opacity: 0.14;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes alertGlow {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  50% {
+    opacity: 0.86;
+  }
+}
+
+@keyframes logoAlarmPulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.018);
+  }
+}
+
+@keyframes redAlertBlink {
+  0%,
+  58% {
+    opacity: 1;
+  }
+  59%,
+  100% {
+    opacity: 0.42;
+  }
+}
+
+@media (max-width: 980px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .board-panel,
+  .control-panel,
+  .board-svg {
+    min-height: 560px;
+  }
+
+  .game-logo-mark {
+    width: 360px;
+    height: 360px;
+  }
+
+  .start-screen h1,
+  .end-screen h1 {
+    font-size: 3.7rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-screen {
+    padding: 10px;
+  }
+
+  .game-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .board-panel,
+  .control-panel,
+  .board-svg {
+    min-height: 430px;
+  }
+
+  .start-screen h1,
+  .end-screen h1 {
+    font-size: 2.35rem;
+  }
+
+  .mission-brief {
+    grid-template-columns: 1fr;
+  }
+
+  .game-logo-mark {
+    width: 280px;
+    height: 280px;
+    margin-bottom: -16px;
+  }
+
+  .story-intro {
+    font-size: 1.08rem;
+  }
+
+  .start-screen h1::after {
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+  }
+
+}
+
+</style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <section id="start-screen" class="screen start-screen">
+        <div class="alert-atmosphere" aria-hidden="true">
+          <span class="shock-ring ring-a"></span>
+          <span class="shock-ring ring-b"></span>
+          <span class="signal-sweep sweep-a"></span>
+          <span class="signal-sweep sweep-b"></span>
+        </div>
+        <div class="brand-mark game-logo-mark">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5ODAgOTgwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2lnbmFsIEFmdGVyc2hvY2sgVHJpYW5ndWxhdGlvbiBSYWNlIExvZ288L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj5BIGRpc2FzdGVyIHJlc3BvbnNlIGdhbWUgYmFkZ2Ugd2l0aCB0aHJlZSBzaWduYWwgdG93ZXJzLCB0cmlhbmd1bGFyIHJlbGF5IGJlYW1zLCBTT1MsIGFuZCB0aGUgdGl0bGUgU2lnbmFsIEFmdGVyc2hvY2suPC9kZXNjPgogIDxkZWZzPgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJjb3JlR2xvdyIgY3g9IjUwJSIgY3k9IjQ1JSIgcj0iNjIlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzE3MzY0YSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU4JSIgc3RvcC1jb2xvcj0iIzA3MTYyNyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMzA3MTEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InN0ZWVsIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmOGZiZmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0OCUiIHN0b3AtY29sb3I9IiNhYWI4YzUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNGI1OTY3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJvcmFuZ2VUZXh0IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmQyNmEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0NSUiIHN0b3AtY29sb3I9IiNmZjk0MmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjYzk0ODBkIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iY3lhbkdsb3ciIHg9Ii02MCUiIHk9Ii02MCUiIHdpZHRoPSIyMjAlIiBoZWlnaHQ9IjIyMCUiPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSI1IiByZXN1bHQ9ImJsdXIiLz4KICAgICAgPGZlTWVyZ2U+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJibHVyIi8+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+CiAgICAgIDwvZmVNZXJnZT4KICAgIDwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0ib3JhbmdlR2xvdyIgeD0iLTYwJSIgeT0iLTYwJSIgd2lkdGg9IjIyMCUiIGhlaWdodD0iMjIwJSI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjYiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz4KICAgICAgPC9mZU1lcmdlPgogICAgPC9maWx0ZXI+CiAgICA8ZmlsdGVyIGlkPSJoYXJkU2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjEyIiBzdGREZXZpYXRpb249IjkiIGZsb29kLWNvbG9yPSIjMDAwODE0IiBmbG9vZC1vcGFjaXR5PSIwLjgiLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KCiAgPHBhdGggZD0iTTQ4OCAyOCBMNTM2IDc0IEw2MDQgNTggTDY0NiAxMTggTDcyMCAxMjIgTDc0OCAxOTAgTDgxOCAyMTYgTDgyOCAyOTIgTDg5MCAzMzggTDg3MCA0MTQgTDkxOCA0ODAgTDg3MCA1NDYgTDg5MCA2MjIgTDgyOCA2NjggTDgxOCA3NDQgTDc0OCA3NzAgTDcyMCA4MzggTDY0NiA4NDIgTDYwNCA5MDIgTDUzNiA4ODYgTDQ4OCA5MzIgTDQ0MCA4ODYgTDM3MiA5MDIgTDMzMCA4NDIgTDI1NiA4MzggTDIyOCA3NzAgTDE1OCA3NDQgTDE0OCA2NjggTDg2IDYyMiBMMTA2IDU0NiBMNTggNDgwIEwxMDYgNDE0IEw4NiAzMzggTDE0OCAyOTIgTDE1OCAyMTYgTDIyOCAxOTAgTDI1NiAxMjIgTDMzMCAxMTggTDM3MiA1OCBMNDQwIDc0IFoiIGZpbGw9IiMwNjExMWYiIHN0cm9rZT0iIzI3NGQ3NyIgc3Ryb2tlLXdpZHRoPSIxNiIgZmlsdGVyPSJ1cmwoI2hhcmRTaGFkb3cpIi8+CiAgPHBhdGggZD0iTTQ4OCA3MiBMNTMwIDEwOCBMNTkwIDk2IEw2MjYgMTQ4IEw2OTAgMTU2IEw3MTQgMjE0IEw3NzYgMjM4IEw3ODQgMzA2IEw4MzggMzQ4IEw4MjIgNDE2IEw4NjIgNDgwIEw4MjIgNTQ0IEw4MzggNjEyIEw3ODQgNjU0IEw3NzYgNzIyIEw3MTQgNzQ2IEw2OTAgODA0IEw2MjYgODEyIEw1OTAgODY0IEw1MzAgODUyIEw0ODggODg4IEw0NDYgODUyIEwzODYgODY0IEwzNTAgODEyIEwyODYgODA0IEwyNjIgNzQ2IEwyMDAgNzIyIEwxOTIgNjU0IEwxMzggNjEyIEwxNTQgNTQ0IEwxMTQgNDgwIEwxNTQgNDE2IEwxMzggMzQ4IEwxOTIgMzA2IEwyMDAgMjM4IEwyNjIgMjE0IEwyODYgMTU2IEwzNTAgMTQ4IEwzODYgOTYgTDQ0NiAxMDggWiIgZmlsbD0idXJsKCNjb3JlR2xvdykiIHN0cm9rZT0iIzZlYjhmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuNTIiIHN0cm9rZS13aWR0aD0iNiIvPgoKICA8ZyBvcGFjaXR5PSIwLjM0IiBmaWxsPSIjMDcxMTFkIj4KICAgIDxwYXRoIGQ9Ik0yMTAgNDIyIGg0NCB2LTkyIGgtNDQgeiBNMjcwIDQzOCBoNTIgdi0xNDIgaC01MiB6IE03MTggNDI0IGg0MiB2LTExOCBoLTQyIHogTTc3NCA0NDQgaDQ4IHYtMTU0IGgtNDggeiBNNjM0IDQwNiBoMzggdi03NiBoLTM4IHoiLz4KICAgIDxwYXRoIGQ9Ik0xNzQgNDU2IGg2NzYgdjI4IGgtNjc2eiIvPgogICAgPHBhdGggZD0iTTE5OCA3MDggaDU5MCB2MjQgaC01OTB6Ii8+CiAgPC9nPgoKICA8ZyBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTI0NCA0NTIgTDQ5MiAyMjggTDc0MiA0NTIiIHN0cm9rZT0iI2ZmOWMzMSIgc3Ryb2tlLXdpZHRoPSIxMiIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDQ1MiBMNzQyIDQ1MiIgc3Ryb2tlPSIjMzllM2ZmIiBzdHJva2Utd2lkdGg9IjEyIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIi8+CiAgICA8cGF0aCBkPSJNNDkyIDIyOCBMNzQyIDQ1MiIgc3Ryb2tlPSIjOGNmZjU0IiBzdHJva2Utd2lkdGg9IjEwIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDQ1MiBMNDkyIDQ1MiBMNzQyIDQ1MiIgc3Ryb2tlPSIjZmZmM2E4IiBzdHJva2Utb3BhY2l0eT0iMC41IiBzdHJva2Utd2lkdGg9IjIiLz4KICAgIDxwYXRoIGQ9Ik0yNDQgNDUyIEwyNjYgNDM4IEwyNzggNDYyIEwyOTQgNDMwIEwzMTAgNDU0IEwzMjYgNDQ4IiBzdHJva2U9IiNmZmU0YTAiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTc0MiA0NTIgTDcyMiA0MzggTDcwNiA0NjAgTDY5MiA0MzAgTDY3NiA0NTQgTDY2MCA0NDgiIHN0cm9rZT0iI2NiZmY5ZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+CiAgICA8cGF0aCBkPSJNMzUwIDQ1MiBoNzIgbDE0IC0yNCBsMjYgNTIgbDIyIC03NCBsMjkgOTQgbDIwIC00OCBoMTA0IiBzdHJva2U9IiNmZjYxMzgiIHN0cm9rZS13aWR0aD0iNiIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIi8+CiAgPC9nPgoKICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0OTIgMjI4KSIgZmlsdGVyPSJ1cmwoI2N5YW5HbG93KSI+CiAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSIjMDYyMjM2IiBzdHJva2U9IiMzOWUzZmYiIHN0cm9rZS13aWR0aD0iOCIvPgogICAgPHBhdGggZD0iTS00NiAtNTYgUTAgLTk2IDQ2IC01NiBNLTMzIC0zNiBRMCAtNjYgMzMgLTM2IE0tMjAgLTE3IFEwIC0zNSAyMCAtMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVlZmZmZiIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8Y2lyY2xlIHI9IjE0IiBmaWxsPSIjNjVmOGZmIi8+CiAgPC9nPgoKICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNDQgNDUyKSIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIj4KICAgIDxjaXJjbGUgcj0iNTIiIGZpbGw9IiMyNDEyMDciIHN0cm9rZT0iI2ZmOWMzMSIgc3Ryb2tlLXdpZHRoPSI4Ii8+CiAgICA8cGF0aCBkPSJNLTQyIC0yOCBRMCAtNjggNDIgLTI4IE0tMjggLTEzIFEwIC00MiAyOCAtMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmY2Y2YSIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgcj0iMTIiIGZpbGw9IiNmZmQ0NzUiLz4KICA8L2c+CgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc0MiA0NTIpIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIj4KICAgIDxjaXJjbGUgcj0iNTIiIGZpbGw9IiMwYjIyMDkiIHN0cm9rZT0iIzhjZmY1NCIgc3Ryb2tlLXdpZHRoPSI4Ii8+CiAgICA8cGF0aCBkPSJNLTQyIC0yOCBRMCAtNjggNDIgLTI4IE0tMjggLTEzIFEwIC00MiAyOCAtMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NiZmY5ZiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgcj0iMTIiIGZpbGw9IiNjYWZmOGMiLz4KICA8L2c+CgogIDxnIGZpbGw9InVybCgjc3RlZWwpIiBzdHJva2U9IiMxYjI2MzUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNNDU4IDIyNCBMNDkyIDEwMiBMNTI2IDIyNCBaIi8+CiAgICA8cGF0aCBkPSJNMjExIDQ1MCBMMjQ0IDMzMCBMMjc3IDQ1MCBaIi8+CiAgICA8cGF0aCBkPSJNNzA5IDQ1MCBMNzQyIDMzMCBMNzc1IDQ1MCBaIi8+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzExMWQyYiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTQ5MiAxMTYgdjk4IE00NjggMTg2IGg0OCBNNDc0IDE2MiBoMzYgTTQ4MiAxMzYgaDIwIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDM0NCB2OTYgTTIyMiA0MTYgaDQ0IE0yMjggMzkyIGgzMiBNMjM2IDM2NiBoMTYiLz4KICAgIDxwYXRoIGQ9Ik03NDIgMzQ0IHY5NiBNNzIwIDQxNiBoNDQgTTcyNiAzOTIgaDMyIE03MzQgMzY2IGgxNiIvPgogIDwvZz4KCiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDg4IDQ1MikiPgogICAgPGNpcmNsZSByPSI3MiIgZmlsbD0iIzFiMTIxMCIgc3Ryb2tlPSIjOWRiN2NlIiBzdHJva2Utd2lkdGg9IjgiLz4KICAgIDxjaXJjbGUgcj0iNTYiIGZpbGw9IiM0NjE2MGMiIHN0cm9rZT0iI2ZmNjEzOCIgc3Ryb2tlLXdpZHRoPSI1IiBmaWx0ZXI9InVybCgjb3JhbmdlR2xvdykiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iSW1wYWN0LCBBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI2MiIgZmlsbD0iI2ZmZjZlOCIgc3Ryb2tlPSIjZmY2MTM4IiBzdHJva2Utd2lkdGg9IjIiPlNPUzwvdGV4dD4KICA8L2c+CgogIDxnIGZvbnQtZmFtaWx5PSJJbXBhY3QsIEFyaWFsIEJsYWNrLCBzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWx0ZXI9InVybCgjaGFyZFNoYWRvdykiPgogICAgPHRleHQgeD0iNDkwIiB5PSI2NDYiIGZvbnQtc2l6ZT0iMTM4IiBmaWxsPSIjZjdmN2YxIiBzdHJva2U9IiMwNjEwMWQiIHN0cm9rZS13aWR0aD0iMTAiIGxldHRlci1zcGFjaW5nPSIzIj5TSUdOQUw8L3RleHQ+CiAgICA8dGV4dCB4PSI0OTAiIHk9Ijc3NSIgZm9udC1zaXplPSIxMjYiIGZpbGw9InVybCgjb3JhbmdlVGV4dCkiIHN0cm9rZT0iIzA3MTAxYSIgc3Ryb2tlLXdpZHRoPSIxMCIgbGV0dGVyLXNwYWNpbmc9IjEiPkFGVEVSU0hPQ0s8L3RleHQ+CiAgPC9nPgogIDxnIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgQXJpYWwsIHNhbnMtc2VyaWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIxMiI+CiAgICA8cGF0aCBkPSJNMjM0IDgxMiBINzQ0IiBzdHJva2U9IiMzOWUzZmYiIHN0cm9rZS13aWR0aD0iNSIgZmlsdGVyPSJ1cmwoI2N5YW5HbG93KSIvPgogICAgPHRleHQgeD0iNDkwIiB5PSI4NDAiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiM1MmU4ZmYiPlRSSUFOR1VMQVRJT04gUkFDRTwvdGV4dD4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzkyIDg2MCkiPgogICAgPHBhdGggZD0iTTAgMCBoNjQgbDEwIDYwIGwtNDIgMjIgbC00MiAtMjIgeiIgZmlsbD0iI2U5NmIxNCIgc3Ryb2tlPSIjZmZkMjZhIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgIDxwYXRoIGQ9Ik05NiAwIGg2NCBsMTAgNjAgbC00MiAyMiBsLTQyIC0yMiB6IiBmaWxsPSIjMGY2ZmE1IiBzdHJva2U9IiM2OWRkZmYiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTE5MiAwIGg2NCBsMTAgNjAgbC00MiAyMiBsLTQyIC0yMiB6IiBmaWxsPSIjMzA5MzMzIiBzdHJva2U9IiNjN2ZmOGMiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTIzIDM0IHE4IC0xNyAzMCAwIE0xNiA0MyBoNDMgTTI4IDMxIGgxOCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPgogICAgPHBhdGggZD0iTTEyNiAxOCB2NDUgTTExMiAzNyBoMjggTTExOCA1NiBoMTYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Ik0yMjQgMTggdjQ4IE0yMDAgNDIgaDQ4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMTMiIHN0cm9rZS1saW5lY2FwPSJzcXVhcmUiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="Signal Aftershock: Triangulation Race game logo" />
+        </div>
+        <p class="eyebrow alarm-kicker">Emergency command map</p>
+        <h1>Signal Aftershock: Triangulation Race</h1>
+        <p class="subtitle story-intro">After the 04:17 aftershock, the city goes dark. Response units have minutes to rebuild a signal web before hospitals, shelters, and power stations lose contact.</p>
+        <p class="incident-code">Incident code MEL-04:17 / Priority network failure / Civil relay blackout</p>
+
+        <div class="mission-brief" aria-label="Mission brief">
+          <div>
+            <span class="brief-code">Mission</span>
+            <strong>Rebuild the emergency signal web</strong>
+            <p>Each line is a temporary relay. Each completed triangle becomes a stable coverage zone.</p>
+          </div>
+          <div>
+            <span class="brief-code">Victory</span>
+            <strong>Highest Coverage Score wins</strong>
+            <p>Score = claimed area + critical-site bonuses + full-length closure bonus.</p>
+          </div>
+          <div>
+            <span class="brief-code">End</span>
+            <strong>Fixed turns or 70% coverage</strong>
+            <p>2 players get 12 turns each. 3 players get 10 turns each.</p>
+          </div>
+        </div>
+
+        <div class="player-select" aria-label="Player count">
+          <button class="choice-button selected" data-player-count="2">2 Players</button>
+          <button class="choice-button" data-player-count="3">3 Players</button>
+        </div>
+
+        <div class="start-actions">
+          <button id="start-game" class="primary-button">Start Game</button>
+          <button class="secondary-button" data-open-help>How to Play</button>
+        </div>
+        <p class="asset-credit">Game logo: custom SVG based on the emergency relay concept.</p>
+      </section>
+
+      <section id="game-screen" class="screen game-screen hidden">
+        <header class="game-header">
+          <div class="logo-lockup">
+            <div class="mini-logo" aria-hidden="true">
+              <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5ODAgOTgwIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+U2lnbmFsIEFmdGVyc2hvY2sgVHJpYW5ndWxhdGlvbiBSYWNlIExvZ288L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj5BIGRpc2FzdGVyIHJlc3BvbnNlIGdhbWUgYmFkZ2Ugd2l0aCB0aHJlZSBzaWduYWwgdG93ZXJzLCB0cmlhbmd1bGFyIHJlbGF5IGJlYW1zLCBTT1MsIGFuZCB0aGUgdGl0bGUgU2lnbmFsIEFmdGVyc2hvY2suPC9kZXNjPgogIDxkZWZzPgogICAgPHJhZGlhbEdyYWRpZW50IGlkPSJjb3JlR2xvdyIgY3g9IjUwJSIgY3k9IjQ1JSIgcj0iNjIlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzE3MzY0YSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjU4JSIgc3RvcC1jb2xvcj0iIzA3MTYyNyIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwMzA3MTEiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InN0ZWVsIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmOGZiZmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0OCUiIHN0b3AtY29sb3I9IiNhYWI4YzUiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjNGI1OTY3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJvcmFuZ2VUZXh0IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNmZmQyNmEiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI0NSUiIHN0b3AtY29sb3I9IiNmZjk0MmYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjYzk0ODBkIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0iY3lhbkdsb3ciIHg9Ii02MCUiIHk9Ii02MCUiIHdpZHRoPSIyMjAlIiBoZWlnaHQ9IjIyMCUiPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSI1IiByZXN1bHQ9ImJsdXIiLz4KICAgICAgPGZlTWVyZ2U+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJibHVyIi8+CiAgICAgICAgPGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+CiAgICAgIDwvZmVNZXJnZT4KICAgIDwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0ib3JhbmdlR2xvdyIgeD0iLTYwJSIgeT0iLTYwJSIgd2lkdGg9IjIyMCUiIGhlaWdodD0iMjIwJSI+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjYiIHJlc3VsdD0iYmx1ciIvPgogICAgICA8ZmVNZXJnZT4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49ImJsdXIiLz4KICAgICAgICA8ZmVNZXJnZU5vZGUgaW49IlNvdXJjZUdyYXBoaWMiLz4KICAgICAgPC9mZU1lcmdlPgogICAgPC9maWx0ZXI+CiAgICA8ZmlsdGVyIGlkPSJoYXJkU2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMCIgZHk9IjEyIiBzdGREZXZpYXRpb249IjkiIGZsb29kLWNvbG9yPSIjMDAwODE0IiBmbG9vZC1vcGFjaXR5PSIwLjgiLz4KICAgIDwvZmlsdGVyPgogIDwvZGVmcz4KCiAgPHBhdGggZD0iTTQ4OCAyOCBMNTM2IDc0IEw2MDQgNTggTDY0NiAxMTggTDcyMCAxMjIgTDc0OCAxOTAgTDgxOCAyMTYgTDgyOCAyOTIgTDg5MCAzMzggTDg3MCA0MTQgTDkxOCA0ODAgTDg3MCA1NDYgTDg5MCA2MjIgTDgyOCA2NjggTDgxOCA3NDQgTDc0OCA3NzAgTDcyMCA4MzggTDY0NiA4NDIgTDYwNCA5MDIgTDUzNiA4ODYgTDQ4OCA5MzIgTDQ0MCA4ODYgTDM3MiA5MDIgTDMzMCA4NDIgTDI1NiA4MzggTDIyOCA3NzAgTDE1OCA3NDQgTDE0OCA2NjggTDg2IDYyMiBMMTA2IDU0NiBMNTggNDgwIEwxMDYgNDE0IEw4NiAzMzggTDE0OCAyOTIgTDE1OCAyMTYgTDIyOCAxOTAgTDI1NiAxMjIgTDMzMCAxMTggTDM3MiA1OCBMNDQwIDc0IFoiIGZpbGw9IiMwNjExMWYiIHN0cm9rZT0iIzI3NGQ3NyIgc3Ryb2tlLXdpZHRoPSIxNiIgZmlsdGVyPSJ1cmwoI2hhcmRTaGFkb3cpIi8+CiAgPHBhdGggZD0iTTQ4OCA3MiBMNTMwIDEwOCBMNTkwIDk2IEw2MjYgMTQ4IEw2OTAgMTU2IEw3MTQgMjE0IEw3NzYgMjM4IEw3ODQgMzA2IEw4MzggMzQ4IEw4MjIgNDE2IEw4NjIgNDgwIEw4MjIgNTQ0IEw4MzggNjEyIEw3ODQgNjU0IEw3NzYgNzIyIEw3MTQgNzQ2IEw2OTAgODA0IEw2MjYgODEyIEw1OTAgODY0IEw1MzAgODUyIEw0ODggODg4IEw0NDYgODUyIEwzODYgODY0IEwzNTAgODEyIEwyODYgODA0IEwyNjIgNzQ2IEwyMDAgNzIyIEwxOTIgNjU0IEwxMzggNjEyIEwxNTQgNTQ0IEwxMTQgNDgwIEwxNTQgNDE2IEwxMzggMzQ4IEwxOTIgMzA2IEwyMDAgMjM4IEwyNjIgMjE0IEwyODYgMTU2IEwzNTAgMTQ4IEwzODYgOTYgTDQ0NiAxMDggWiIgZmlsbD0idXJsKCNjb3JlR2xvdykiIHN0cm9rZT0iIzZlYjhmZiIgc3Ryb2tlLW9wYWNpdHk9IjAuNTIiIHN0cm9rZS13aWR0aD0iNiIvPgoKICA8ZyBvcGFjaXR5PSIwLjM0IiBmaWxsPSIjMDcxMTFkIj4KICAgIDxwYXRoIGQ9Ik0yMTAgNDIyIGg0NCB2LTkyIGgtNDQgeiBNMjcwIDQzOCBoNTIgdi0xNDIgaC01MiB6IE03MTggNDI0IGg0MiB2LTExOCBoLTQyIHogTTc3NCA0NDQgaDQ4IHYtMTU0IGgtNDggeiBNNjM0IDQwNiBoMzggdi03NiBoLTM4IHoiLz4KICAgIDxwYXRoIGQ9Ik0xNzQgNDU2IGg2NzYgdjI4IGgtNjc2eiIvPgogICAgPHBhdGggZD0iTTE5OCA3MDggaDU5MCB2MjQgaC01OTB6Ii8+CiAgPC9nPgoKICA8ZyBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggZD0iTTI0NCA0NTIgTDQ5MiAyMjggTDc0MiA0NTIiIHN0cm9rZT0iI2ZmOWMzMSIgc3Ryb2tlLXdpZHRoPSIxMiIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDQ1MiBMNzQyIDQ1MiIgc3Ryb2tlPSIjMzllM2ZmIiBzdHJva2Utd2lkdGg9IjEyIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIi8+CiAgICA8cGF0aCBkPSJNNDkyIDIyOCBMNzQyIDQ1MiIgc3Ryb2tlPSIjOGNmZjU0IiBzdHJva2Utd2lkdGg9IjEwIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDQ1MiBMNDkyIDQ1MiBMNzQyIDQ1MiIgc3Ryb2tlPSIjZmZmM2E4IiBzdHJva2Utb3BhY2l0eT0iMC41IiBzdHJva2Utd2lkdGg9IjIiLz4KICAgIDxwYXRoIGQ9Ik0yNDQgNDUyIEwyNjYgNDM4IEwyNzggNDYyIEwyOTQgNDMwIEwzMTAgNDU0IEwzMjYgNDQ4IiBzdHJva2U9IiNmZmU0YTAiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTc0MiA0NTIgTDcyMiA0MzggTDcwNiA0NjAgTDY5MiA0MzAgTDY3NiA0NTQgTDY2MCA0NDgiIHN0cm9rZT0iI2NiZmY5ZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+CiAgICA8cGF0aCBkPSJNMzUwIDQ1MiBoNzIgbDE0IC0yNCBsMjYgNTIgbDIyIC03NCBsMjkgOTQgbDIwIC00OCBoMTA0IiBzdHJva2U9IiNmZjYxMzgiIHN0cm9rZS13aWR0aD0iNiIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIi8+CiAgPC9nPgoKICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0OTIgMjI4KSIgZmlsdGVyPSJ1cmwoI2N5YW5HbG93KSI+CiAgICA8Y2lyY2xlIHI9IjU0IiBmaWxsPSIjMDYyMjM2IiBzdHJva2U9IiMzOWUzZmYiIHN0cm9rZS13aWR0aD0iOCIvPgogICAgPHBhdGggZD0iTS00NiAtNTYgUTAgLTk2IDQ2IC01NiBNLTMzIC0zNiBRMCAtNjYgMzMgLTM2IE0tMjAgLTE3IFEwIC0zNSAyMCAtMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzVlZmZmZiIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8Y2lyY2xlIHI9IjE0IiBmaWxsPSIjNjVmOGZmIi8+CiAgPC9nPgoKICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyNDQgNDUyKSIgZmlsdGVyPSJ1cmwoI29yYW5nZUdsb3cpIj4KICAgIDxjaXJjbGUgcj0iNTIiIGZpbGw9IiMyNDEyMDciIHN0cm9rZT0iI2ZmOWMzMSIgc3Ryb2tlLXdpZHRoPSI4Ii8+CiAgICA8cGF0aCBkPSJNLTQyIC0yOCBRMCAtNjggNDIgLTI4IE0tMjggLTEzIFEwIC00MiAyOCAtMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmY2Y2YSIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgcj0iMTIiIGZpbGw9IiNmZmQ0NzUiLz4KICA8L2c+CgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc0MiA0NTIpIiBmaWx0ZXI9InVybCgjY3lhbkdsb3cpIj4KICAgIDxjaXJjbGUgcj0iNTIiIGZpbGw9IiMwYjIyMDkiIHN0cm9rZT0iIzhjZmY1NCIgc3Ryb2tlLXdpZHRoPSI4Ii8+CiAgICA8cGF0aCBkPSJNLTQyIC0yOCBRMCAtNjggNDIgLTI4IE0tMjggLTEzIFEwIC00MiAyOCAtMTMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NiZmY5ZiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxjaXJjbGUgcj0iMTIiIGZpbGw9IiNjYWZmOGMiLz4KICA8L2c+CgogIDxnIGZpbGw9InVybCgjc3RlZWwpIiBzdHJva2U9IiMxYjI2MzUiIHN0cm9rZS13aWR0aD0iNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+CiAgICA8cGF0aCBkPSJNNDU4IDIyNCBMNDkyIDEwMiBMNTI2IDIyNCBaIi8+CiAgICA8cGF0aCBkPSJNMjExIDQ1MCBMMjQ0IDMzMCBMMjc3IDQ1MCBaIi8+CiAgICA8cGF0aCBkPSJNNzA5IDQ1MCBMNzQyIDMzMCBMNzc1IDQ1MCBaIi8+CiAgPC9nPgogIDxnIHN0cm9rZT0iIzExMWQyYiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWNhcD0icm91bmQiPgogICAgPHBhdGggZD0iTTQ5MiAxMTYgdjk4IE00NjggMTg2IGg0OCBNNDc0IDE2MiBoMzYgTTQ4MiAxMzYgaDIwIi8+CiAgICA8cGF0aCBkPSJNMjQ0IDM0NCB2OTYgTTIyMiA0MTYgaDQ0IE0yMjggMzkyIGgzMiBNMjM2IDM2NiBoMTYiLz4KICAgIDxwYXRoIGQ9Ik03NDIgMzQ0IHY5NiBNNzIwIDQxNiBoNDQgTTcyNiAzOTIgaDMyIE03MzQgMzY2IGgxNiIvPgogIDwvZz4KCiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDg4IDQ1MikiPgogICAgPGNpcmNsZSByPSI3MiIgZmlsbD0iIzFiMTIxMCIgc3Ryb2tlPSIjOWRiN2NlIiBzdHJva2Utd2lkdGg9IjgiLz4KICAgIDxjaXJjbGUgcj0iNTYiIGZpbGw9IiM0NjE2MGMiIHN0cm9rZT0iI2ZmNjEzOCIgc3Ryb2tlLXdpZHRoPSI1IiBmaWx0ZXI9InVybCgjb3JhbmdlR2xvdykiLz4KICAgIDx0ZXh0IHg9IjAiIHk9IjIxIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iSW1wYWN0LCBBcmlhbCBCbGFjaywgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI2MiIgZmlsbD0iI2ZmZjZlOCIgc3Ryb2tlPSIjZmY2MTM4IiBzdHJva2Utd2lkdGg9IjIiPlNPUzwvdGV4dD4KICA8L2c+CgogIDxnIGZvbnQtZmFtaWx5PSJJbXBhY3QsIEFyaWFsIEJsYWNrLCBzYW5zLXNlcmlmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWx0ZXI9InVybCgjaGFyZFNoYWRvdykiPgogICAgPHRleHQgeD0iNDkwIiB5PSI2NDYiIGZvbnQtc2l6ZT0iMTM4IiBmaWxsPSIjZjdmN2YxIiBzdHJva2U9IiMwNjEwMWQiIHN0cm9rZS13aWR0aD0iMTAiIGxldHRlci1zcGFjaW5nPSIzIj5TSUdOQUw8L3RleHQ+CiAgICA8dGV4dCB4PSI0OTAiIHk9Ijc3NSIgZm9udC1zaXplPSIxMjYiIGZpbGw9InVybCgjb3JhbmdlVGV4dCkiIHN0cm9rZT0iIzA3MTAxYSIgc3Ryb2tlLXdpZHRoPSIxMCIgbGV0dGVyLXNwYWNpbmc9IjEiPkFGVEVSU0hPQ0s8L3RleHQ+CiAgPC9nPgogIDxnIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjaywgQXJpYWwsIHNhbnMtc2VyaWYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIxMiI+CiAgICA8cGF0aCBkPSJNMjM0IDgxMiBINzQ0IiBzdHJva2U9IiMzOWUzZmYiIHN0cm9rZS13aWR0aD0iNSIgZmlsdGVyPSJ1cmwoI2N5YW5HbG93KSIvPgogICAgPHRleHQgeD0iNDkwIiB5PSI4NDAiIGZvbnQtc2l6ZT0iMzYiIGZpbGw9IiM1MmU4ZmYiPlRSSUFOR1VMQVRJT04gUkFDRTwvdGV4dD4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzkyIDg2MCkiPgogICAgPHBhdGggZD0iTTAgMCBoNjQgbDEwIDYwIGwtNDIgMjIgbC00MiAtMjIgeiIgZmlsbD0iI2U5NmIxNCIgc3Ryb2tlPSIjZmZkMjZhIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgIDxwYXRoIGQ9Ik05NiAwIGg2NCBsMTAgNjAgbC00MiAyMiBsLTQyIC0yMiB6IiBmaWxsPSIjMGY2ZmE1IiBzdHJva2U9IiM2OWRkZmYiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTE5MiAwIGg2NCBsMTAgNjAgbC00MiAyMiBsLTQyIC0yMiB6IiBmaWxsPSIjMzA5MzMzIiBzdHJva2U9IiNjN2ZmOGMiIHN0cm9rZS13aWR0aD0iNCIvPgogICAgPHBhdGggZD0iTTIzIDM0IHE4IC0xNyAzMCAwIE0xNiA0MyBoNDMgTTI4IDMxIGgxOCIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgZmlsbD0ibm9uZSIvPgogICAgPHBhdGggZD0iTTEyNiAxOCB2NDUgTTExMiAzNyBoMjggTTExOCA1NiBoMTYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIGZpbGw9Im5vbmUiLz4KICAgIDxwYXRoIGQ9Ik0yMjQgMTggdjQ4IE0yMDAgNDIgaDQ4IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMTMiIHN0cm9rZS1saW5lY2FwPSJzcXVhcmUiLz4KICA8L2c+Cjwvc3ZnPgo=" alt="" />
+            </div>
+            <div>
+              <p class="eyebrow">Live response board</p>
+              <h1>Signal Aftershock</h1>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="secondary-button compact" data-open-help>How to Play</button>
+            <button id="restart-game" class="secondary-button compact">Restart</button>
+          </div>
+        </header>
+
+        <main class="game-layout">
+          <section class="board-panel" aria-label="Triangular city grid">
+            <svg id="board-svg" class="board-svg" role="img" aria-label="Triangular signal map"></svg>
+          </section>
+
+          <aside class="control-panel">
+            <section class="status-block mission-status">
+              <span class="label">Mission status</span>
+              <div id="mission-progress" class="mission-progress"></div>
+            </section>
+
+            <section class="status-block active-status">
+              <span class="label">Current team</span>
+              <div id="current-player" class="current-player"></div>
+              <p id="instruction-text" class="instruction-text">Roll the die to begin the turn.</p>
+            </section>
+
+            <section class="status-block dice-block">
+              <span class="label">Signal length</span>
+              <div id="dice-display" class="dice-display">-</div>
+              <button id="roll-dice" class="primary-button full">Roll Dice</button>
+              <label id="debug-dice-wrap" class="debug-dice hidden">
+                Debug Dice
+                <select id="debug-dice">
+                  <option value="">Random</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                </select>
+              </label>
+            </section>
+
+            <section class="status-block">
+              <span class="label">Scores</span>
+              <div id="score-list" class="score-list"></div>
+            </section>
+
+            <section class="status-block">
+              <span class="label">Turns</span>
+              <div id="turn-summary" class="turn-summary"></div>
+            </section>
+
+            <section class="status-block victory-rules">
+              <span class="label">Victory rule</span>
+              <p><strong>Highest Coverage Score wins.</strong></p>
+              <p>Score = new triangle cells + critical-site bonuses + full-length closure bonus.</p>
+              <p>Ties: more area, then more sites. If still tied, shared victory.</p>
+            </section>
+
+            <section class="status-block site-legend">
+              <span class="label">Critical sites</span>
+              <div class="site-grid">
+                <span><i class="legend-icon shelter-icon"></i>Shelter +2</span>
+                <span><i class="legend-icon hospital-icon"></i>Hospital +3</span>
+                <span><i class="legend-icon relay-icon"></i>Relay +2</span>
+                <span><i class="legend-icon power-icon"></i>Power +3</span>
+                <span><i class="legend-icon supply-icon"></i>Supply +2</span>
+              </div>
+            </section>
+
+            <section class="status-block log-block">
+              <span class="label">Signal log</span>
+              <ol id="game-log" class="game-log"></ol>
+            </section>
+          </aside>
+        </main>
+      </section>
+
+      <section id="end-screen" class="screen end-screen hidden">
+        <p class="eyebrow">Coverage secured</p>
+        <h1 id="winner-title">Winner</h1>
+        <p id="end-reason" class="subtitle"></p>
+        <p class="win-explain">Winner is decided by Coverage Score: area claimed + critical-site bonuses + full-length triangle closures.</p>
+        <div id="final-scores" class="final-scores"></div>
+        <button id="play-again" class="primary-button">Play Again</button>
+      </section>
+    </div>
+
+    <div id="modal-backdrop" class="modal-backdrop hidden" aria-hidden="true">
+      <section id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button id="modal-close" class="modal-close" aria-label="Close">x</button>
+        <h2 id="modal-title"></h2>
+        <div id="modal-body" class="modal-body"></div>
+      </section>
+    </div>
+
+    <script>
+/* src/config.js */
+const CONFIG = {
+  gridSize: 7,
+  spacing: 76,
+  marginX: 86,
+  marginY: 78,
+  maxTriangleSide: 4,
+  claimThreshold: 0.7,
+  players: [
+    {
+      id: "blue",
+      name: "Blue Team",
+      unit: "SkyLink Unit",
+      color: "#3ad7c7",
+      softColor: "rgba(58, 215, 199, 0.32)"
+    },
+    {
+      id: "orange",
+      name: "Orange Team",
+      unit: "Ground Relay Unit",
+      color: "#f39a38",
+      softColor: "rgba(243, 154, 56, 0.32)"
+    },
+    {
+      id: "green",
+      name: "Green Team",
+      unit: "Civic Signal Unit",
+      color: "#76d66d",
+      softColor: "rgba(118, 214, 109, 0.32)"
+    }
+  ],
+  directions: [
+    { q: 1, r: 0 },
+    { q: 0, r: 1 },
+    { q: -1, r: 1 },
+    { q: -1, r: 0 },
+    { q: 0, r: -1 },
+    { q: 1, r: -1 }
+  ],
+  baseDirections: [
+    { q: 1, r: 0 },
+    { q: 0, r: 1 },
+    { q: -1, r: 1 }
+  ],
+  sites: [
+    { id: "shelter", name: "Shelter", label: "SOS", icon: "shelter", bonus: 2, cellId: "cell-1-1-forward" },
+    { id: "hospital", name: "Hospital", label: "H", icon: "hospital", bonus: 3, cellId: "cell-4-1-back" },
+    { id: "relay", name: "Relay Tower", label: "RLY", icon: "relay", bonus: 2, cellId: "cell-2-3-forward" },
+    { id: "power", name: "Power Station", label: "PWR", icon: "power", bonus: 3, cellId: "cell-5-4-back" },
+    { id: "supply", name: "Supply Point", label: "SUP", icon: "supply", bonus: 2, cellId: "cell-1-5-back" }
+  ]
+};
+
+
+/* src/geometry.js */
+function nodeId(q, r) {
+  return `node-${q}-${r}`;
+}
+
+function cellId(q, r, orientation) {
+  return `cell-${q}-${r}-${orientation}`;
+}
+
+function edgeId(a, b) {
+  return [a, b].sort().join("--");
+}
+
+function coordKey(q, r) {
+  return `${q},${r}`;
+}
+
+function samePoint(a, b) {
+  return a.q === b.q && a.r === b.r;
+}
+
+function isAlignedDelta(dq, dr) {
+  return dq === 0 || dr === 0 || dq + dr === 0;
+}
+
+function latticeDistance(a, b) {
+  const dq = b.q - a.q;
+  const dr = b.r - a.r;
+
+  if (!isAlignedDelta(dq, dr)) {
+    return null;
+  }
+
+  return Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
+}
+
+function normalizeDelta(dq, dr) {
+  const length = Math.max(Math.abs(dq), Math.abs(dr), Math.abs(dq + dr));
+
+  if (length === 0 || !isAlignedDelta(dq, dr)) {
+    return null;
+  }
+
+  return {
+    q: dq / length,
+    r: dr / length,
+    length
+  };
+}
+
+function pointInTriangle(point, a, b, c) {
+  const denominator =
+    (b.y - c.y) * (a.x - c.x) +
+    (c.x - b.x) * (a.y - c.y);
+
+  if (Math.abs(denominator) < 0.00001) {
+    return false;
+  }
+
+  const alpha =
+    ((b.y - c.y) * (point.x - c.x) +
+      (c.x - b.x) * (point.y - c.y)) /
+    denominator;
+  const beta =
+    ((c.y - a.y) * (point.x - c.x) +
+      (a.x - c.x) * (point.y - c.y)) /
+    denominator;
+  const gamma = 1 - alpha - beta;
+  const epsilon = -0.0001;
+
+  return alpha >= epsilon && beta >= epsilon && gamma >= epsilon;
+}
+
+function polygonCentroid(points) {
+  const total = points.reduce(
+    (acc, point) => {
+      acc.x += point.x;
+      acc.y += point.y;
+      return acc;
+    },
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: total.x / points.length,
+    y: total.y / points.length
+  };
+}
+
+
+/* src/dice.js */
+function rollD6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+function createBalancedDiceSequence(turnsPerPlayer) {
+  const sequence = [];
+  const baseCycle = [1, 2, 3, 4, 5, 6];
+  const balancedRemainder = [2, 3, 4, 5, 1, 6];
+
+  while (sequence.length + baseCycle.length <= turnsPerPlayer) {
+    sequence.push(...baseCycle);
+  }
+
+  let remainderIndex = 0;
+  while (sequence.length < turnsPerPlayer) {
+    sequence.push(balancedRemainder[remainderIndex]);
+    remainderIndex += 1;
+  }
+
+  return shuffle(sequence);
+}
+
+function getBalancedDiceValue(state, playerId) {
+  const turnIndex = state.turnsTaken[playerId] ?? 0;
+  return state.diceSequence[turnIndex] ?? rollD6();
+}
+
+function shuffle(values) {
+  const shuffled = [...values];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+
+/* src/grid.js */
+function createGrid() {
+  const nodes = [];
+  const nodesById = new Map();
+  const nodesByCoord = new Map();
+  const edges = [];
+  const edgesById = new Map();
+  const cells = [];
+  const cellsById = new Map();
+  const triangles = [];
+
+  const h = (CONFIG.spacing * Math.sqrt(3)) / 2;
+
+  for (let r = 0; r < CONFIG.gridSize; r += 1) {
+    for (let q = 0; q < CONFIG.gridSize; q += 1) {
+      const node = {
+        id: nodeId(q, r),
+        q,
+        r,
+        x: CONFIG.marginX + q * CONFIG.spacing + r * CONFIG.spacing * 0.5,
+        y: CONFIG.marginY + r * h
+      };
+      nodes.push(node);
+      nodesById.set(node.id, node);
+      nodesByCoord.set(coordKey(q, r), node);
+    }
+  }
+
+  const getNode = (q, r) => nodesByCoord.get(coordKey(q, r));
+
+  for (const node of nodes) {
+    for (const direction of CONFIG.baseDirections) {
+      const next = getNode(node.q + direction.q, node.r + direction.r);
+      if (!next) {
+        continue;
+      }
+      const edge = {
+        id: edgeId(node.id, next.id),
+        a: node.id,
+        b: next.id
+      };
+      edges.push(edge);
+      edgesById.set(edge.id, edge);
+    }
+  }
+
+  for (let r = 0; r < CONFIG.gridSize - 1; r += 1) {
+    for (let q = 0; q < CONFIG.gridSize - 1; q += 1) {
+      const a = getNode(q, r);
+      const b = getNode(q + 1, r);
+      const c = getNode(q, r + 1);
+      const d = getNode(q + 1, r + 1);
+
+      addCell(cells, cellsById, q, r, "forward", [a, b, c]);
+      addCell(cells, cellsById, q, r, "back", [b, d, c]);
+    }
+  }
+
+  for (let sideLength = 1; sideLength <= CONFIG.maxTriangleSide; sideLength += 1) {
+    for (let r = 0; r + sideLength < CONFIG.gridSize; r += 1) {
+      for (let q = 0; q + sideLength < CONFIG.gridSize; q += 1) {
+        const forwardVertices = [
+          getNode(q, r),
+          getNode(q + sideLength, r),
+          getNode(q, r + sideLength)
+        ];
+        addCandidateTriangle(triangles, cells, nodesById, forwardVertices, {
+          id: `tri-${q}-${r}-${sideLength}-forward`,
+          q,
+          r,
+          sideLength,
+          orientation: "forward"
+        });
+
+        const backVertices = [
+          getNode(q + sideLength, r),
+          getNode(q + sideLength, r + sideLength),
+          getNode(q, r + sideLength)
+        ];
+        addCandidateTriangle(triangles, cells, nodesById, backVertices, {
+          id: `tri-${q}-${r}-${sideLength}-back`,
+          q,
+          r,
+          sideLength,
+          orientation: "back"
+        });
+      }
+    }
+  }
+
+  const width = CONFIG.marginX * 2 + (CONFIG.gridSize - 1) * CONFIG.spacing * 1.5;
+  const height = CONFIG.marginY * 2 + (CONFIG.gridSize - 1) * h;
+
+  const sites = CONFIG.sites
+    .map((site) => {
+      const cell = cellsById.get(site.cellId);
+      if (!cell) {
+        return null;
+      }
+      return {
+        ...site,
+        x: cell.centroid.x,
+        y: cell.centroid.y
+      };
+    })
+    .filter(Boolean);
+
+  return {
+    nodes,
+    nodesById,
+    nodesByCoord,
+    edges,
+    edgesById,
+    cells,
+    cellsById,
+    triangles,
+    sites,
+    viewBox: `0 0 ${Math.ceil(width)} ${Math.ceil(height)}`
+  };
+}
+
+function getNodeAt(grid, q, r) {
+  return grid.nodesByCoord.get(coordKey(q, r));
+}
+
+function getPathEdges(grid, startId, endId) {
+  const start = grid.nodesById.get(startId);
+  const end = grid.nodesById.get(endId);
+  const step = normalizeDelta(end.q - start.q, end.r - start.r);
+
+  if (!step) {
+    return null;
+  }
+
+  const path = [];
+  let q = start.q;
+  let r = start.r;
+
+  for (let i = 0; i < step.length; i += 1) {
+    const current = getNodeAt(grid, q, r);
+    const next = getNodeAt(grid, q + step.q, r + step.r);
+
+    if (!current || !next) {
+      return null;
+    }
+
+    const unitEdgeId = edgeId(current.id, next.id);
+    if (!grid.edgesById.has(unitEdgeId)) {
+      return null;
+    }
+
+    path.push(unitEdgeId);
+    q += step.q;
+    r += step.r;
+  }
+
+  return path;
+}
+
+function addCell(cells, cellsById, q, r, orientation, vertices) {
+  const id = cellId(q, r, orientation);
+  const points = vertices.map((node) => ({ x: node.x, y: node.y }));
+  const cell = {
+    id,
+    q,
+    r,
+    orientation,
+    vertices: vertices.map((node) => node.id),
+    points,
+    centroid: polygonCentroid(points),
+    boundaryEdges: [
+      edgeId(vertices[0].id, vertices[1].id),
+      edgeId(vertices[1].id, vertices[2].id),
+      edgeId(vertices[2].id, vertices[0].id)
+    ]
+  };
+
+  cells.push(cell);
+  cellsById.set(id, cell);
+}
+
+function addCandidateTriangle(triangles, cells, nodesById, vertices, meta) {
+  const boundaryEdges = [
+    ...getBoundaryPath(vertices[0], vertices[1]),
+    ...getBoundaryPath(vertices[1], vertices[2]),
+    ...getBoundaryPath(vertices[2], vertices[0])
+  ];
+  const points = vertices.map((node) => ({ x: node.x, y: node.y }));
+  const innerSmallCells = cells
+    .filter((cell) => pointInTriangle(cell.centroid, points[0], points[1], points[2]))
+    .map((cell) => cell.id);
+
+  triangles.push({
+    ...meta,
+    vertices: vertices.map((node) => node.id),
+    points,
+    boundaryEdges,
+    innerSmallCells
+  });
+
+  function getBoundaryPath(start, end) {
+    const step = normalizeDelta(end.q - start.q, end.r - start.r);
+    const path = [];
+    let q = start.q;
+    let r = start.r;
+
+    for (let i = 0; i < step.length; i += 1) {
+      const current = nodesById.get(nodeId(q, r));
+      const next = nodesById.get(nodeId(q + step.q, r + step.r));
+      path.push(edgeId(current.id, next.id));
+      q += step.q;
+      r += step.r;
+    }
+
+    return path;
+  }
+}
+
+
+/* src/state.js */
+function createGameState(playerCount = 2) {
+  const grid = createGrid();
+  const players = CONFIG.players.slice(0, playerCount).map((player) => ({
+    ...player,
+    score: 0,
+    claimedCells: 0,
+    collectedSites: 0,
+    sitePoints: 0
+  }));
+
+  return {
+    grid,
+    players,
+    playerCount,
+    activePlayerIndex: 0,
+    maxTurnsPerPlayer: playerCount === 2 ? 12 : 10,
+    diceSequence: createBalancedDiceSequence(playerCount === 2 ? 12 : 10),
+    turnsTaken: Object.fromEntries(players.map((player) => [player.id, 0])),
+    totalTurnsCompleted: 0,
+    diceValue: null,
+    hasRolled: false,
+    emergencyShortening: false,
+    activeLineLength: null,
+    legalMoves: [],
+    edgeOwners: new Map(),
+    drawnLines: [],
+    cellOwners: new Map(),
+    resolvedTriangles: new Set(),
+    collectedSites: new Map(),
+    gameLog: [
+      "Command channel open. Roll the die to deploy the first signal link."
+    ],
+    awaitingTurnResult: false,
+    pendingResolution: null,
+    lastClaimedCells: new Set(),
+    gameOver: false,
+    endReason: null
+  };
+}
+
+function getActivePlayer(state) {
+  return state.players[state.activePlayerIndex];
+}
+
+function getPlayer(state, playerId) {
+  return state.players.find((player) => player.id === playerId);
+}
+
+function addLog(state, message) {
+  state.gameLog.unshift(message);
+  state.gameLog = state.gameLog.slice(0, 12);
+}
+
+
+/* src/rules.js */
+function rollBalancedD6(state) {
+  return getBalancedDiceValue(state, getActivePlayer(state).id);
+}
+
+function computeLegalMovesForTurn(state) {
+  if (!state.diceValue) {
+    state.legalMoves = [];
+    state.emergencyShortening = false;
+    state.activeLineLength = null;
+    return [];
+  }
+
+  const exactMoves = getLegalMoves(state, state.diceValue);
+
+  if (exactMoves.length > 0) {
+    state.legalMoves = exactMoves;
+    state.emergencyShortening = false;
+    state.activeLineLength = state.diceValue;
+    return exactMoves;
+  }
+
+  for (let length = state.diceValue - 1; length >= 1; length -= 1) {
+    const shorterMoves = getLegalMoves(state, length);
+    if (shorterMoves.length > 0) {
+      state.legalMoves = shorterMoves.map((move) => ({
+        ...move,
+        emergency: true
+      }));
+      state.emergencyShortening = true;
+      state.activeLineLength = length;
+      return state.legalMoves;
+    }
+  }
+
+  state.legalMoves = [];
+  state.emergencyShortening = true;
+  state.activeLineLength = null;
+  return [];
+}
+
+function getLegalMoves(state, length) {
+  const moves = new Map();
+
+  for (const node of state.grid.nodes) {
+    for (const direction of CONFIG.directions) {
+      const end = getNodeAt(
+        state.grid,
+        node.q + direction.q * length,
+        node.r + direction.r * length
+      );
+
+      if (!end) {
+        continue;
+      }
+
+      const pathEdges = getPathEdges(state.grid, node.id, end.id);
+      if (!pathEdges || pathEdges.length !== length) {
+        continue;
+      }
+
+      const clear = pathEdges.every((unitEdgeId) => !state.edgeOwners.has(unitEdgeId));
+      if (!clear) {
+        continue;
+      }
+
+      const id = edgeId(node.id, end.id);
+      if (!moves.has(id)) {
+        moves.set(id, {
+          id,
+          startId: node.id,
+          endId: end.id,
+          length,
+          pathEdges,
+          emergency: false
+        });
+      }
+    }
+  }
+
+  return Array.from(moves.values());
+}
+
+function placeLine(state, moveId) {
+  const move = state.legalMoves.find((candidate) => candidate.id === moveId);
+  if (!move) {
+    return null;
+  }
+
+  const activePlayer = getActivePlayer(state);
+
+  for (const unitEdgeId of move.pathEdges) {
+    state.edgeOwners.set(unitEdgeId, activePlayer.id);
+  }
+
+  state.drawnLines.push({
+    id: `${activePlayer.id}-${state.drawnLines.length}`,
+    ownerId: activePlayer.id,
+    startId: move.startId,
+    endId: move.endId,
+    pathEdges: move.pathEdges,
+    length: move.length,
+    fullLength: !move.emergency && move.length === state.diceValue
+  });
+
+  state.legalMoves = [];
+
+  addLog(
+    state,
+    `${activePlayer.name} drew a length-${move.length} signal line${
+      move.emergency ? " with Emergency Shortening" : ""
+    }.`
+  );
+
+  return move;
+}
+
+function findCompletedTriangles(state, newEdges) {
+  const newEdgeSet = new Set(newEdges);
+
+  return state.grid.triangles
+    .filter((triangle) => {
+      if (state.resolvedTriangles.has(triangle.id)) {
+        return false;
+      }
+
+      if (!triangle.boundaryEdges.some((unitEdgeId) => newEdgeSet.has(unitEdgeId))) {
+        return false;
+      }
+
+      if (!triangle.boundaryEdges.every((unitEdgeId) => state.edgeOwners.has(unitEdgeId))) {
+        return false;
+      }
+
+      return triangle.innerSmallCells.some((cellId) => !state.cellOwners.has(cellId));
+    })
+    .sort((a, b) => {
+      if (b.sideLength !== a.sideLength) {
+        return b.sideLength - a.sideLength;
+      }
+      return a.id.localeCompare(b.id);
+    });
+}
+
+function completeTurn(state) {
+  const activePlayer = getActivePlayer(state);
+  state.turnsTaken[activePlayer.id] += 1;
+  state.totalTurnsCompleted += 1;
+  state.diceValue = null;
+  state.hasRolled = false;
+  state.emergencyShortening = false;
+  state.activeLineLength = null;
+  state.legalMoves = [];
+  state.awaitingTurnResult = false;
+  state.pendingResolution = null;
+
+  const endReason = getEndReason(state);
+  if (endReason) {
+    state.gameOver = true;
+    state.endReason = endReason;
+    addLog(state, `Game over: ${endReason}.`);
+    return;
+  }
+
+  let guard = 0;
+  do {
+    state.activePlayerIndex = (state.activePlayerIndex + 1) % state.players.length;
+    guard += 1;
+  } while (
+    state.turnsTaken[getActivePlayer(state).id] >= state.maxTurnsPerPlayer &&
+    guard <= state.players.length
+  );
+
+  addLog(state, `${getActivePlayer(state).name} is active.`);
+}
+
+function getEndReason(state) {
+  const allTurnsUsed = state.players.every(
+    (player) => state.turnsTaken[player.id] >= state.maxTurnsPerPlayer
+  );
+  if (allTurnsUsed) {
+    return "all scheduled turns are complete";
+  }
+
+  const claimedRatio = state.cellOwners.size / state.grid.cells.length;
+  if (claimedRatio >= CONFIG.claimThreshold) {
+    return "70 percent of the city map is covered";
+  }
+
+  const hasAnyMove = [1, 2, 3, 4, 5, 6].some((length) => getLegalMoves(state, length).length > 0);
+  if (!hasAnyMove) {
+    return "no legal signal lines remain";
+  }
+
+  return null;
+}
+
+function getWinnerSummary(state) {
+  const sorted = [...state.players].sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    if (b.claimedCells !== a.claimedCells) {
+      return b.claimedCells - a.claimedCells;
+    }
+    return b.collectedSites - a.collectedSites;
+  });
+
+  const best = sorted[0];
+  const tied = sorted.filter(
+    (player) =>
+      player.score === best.score &&
+      player.claimedCells === best.claimedCells &&
+      player.collectedSites === best.collectedSites
+  );
+
+  return {
+    sorted,
+    winners: tied
+  };
+}
+
+
+/* src/scoring.js */
+function calculateTriangleOwner(state, triangle, closingPlayerId) {
+  const counts = new Map();
+
+  for (const unitEdgeId of triangle.boundaryEdges) {
+    const ownerId = state.edgeOwners.get(unitEdgeId);
+    counts.set(ownerId, (counts.get(ownerId) || 0) + 1);
+  }
+
+  let bestCount = -1;
+  let leaders = [];
+
+  for (const [playerId, count] of counts.entries()) {
+    if (count > bestCount) {
+      bestCount = count;
+      leaders = [playerId];
+    } else if (count === bestCount) {
+      leaders.push(playerId);
+    }
+  }
+
+  return leaders.length === 1 ? leaders[0] : closingPlayerId;
+}
+
+function getTrianglePreview(state, triangle, closingPlayerId, includeLengthBonus = false) {
+  const ownerId = calculateTriangleOwner(state, triangle, closingPlayerId);
+  const unclaimedCells = triangle.innerSmallCells.filter((cellId) => !state.cellOwners.has(cellId));
+  const sites = state.grid.sites.filter(
+    (site) => unclaimedCells.includes(site.cellId) && !state.collectedSites.has(site.id)
+  );
+  const siteBonus = sites.reduce((sum, site) => sum + site.bonus, 0);
+  const lengthBonus = includeLengthBonus && unclaimedCells.length > 0 ? 1 : 0;
+
+  return {
+    triangleId: triangle.id,
+    sideLength: triangle.sideLength,
+    orientation: triangle.orientation,
+    ownerId,
+    area: unclaimedCells.length,
+    sites,
+    siteBonus,
+    lengthBonus,
+    total: unclaimedCells.length + siteBonus + lengthBonus
+  };
+}
+
+function resolveTriangle(state, triangle, closingPlayerId, includeLengthBonus = false) {
+  const preview = getTrianglePreview(state, triangle, closingPlayerId, includeLengthBonus);
+  const owner = getPlayer(state, preview.ownerId);
+  const claimedCells = triangle.innerSmallCells.filter((cellId) => !state.cellOwners.has(cellId));
+
+  state.lastClaimedCells = new Set(claimedCells);
+
+  for (const cellId of claimedCells) {
+    state.cellOwners.set(cellId, owner.id);
+  }
+
+  for (const site of preview.sites) {
+    state.collectedSites.set(site.id, owner.id);
+  }
+
+  owner.score += preview.total;
+  owner.claimedCells += preview.area;
+  owner.collectedSites += preview.sites.length;
+  owner.sitePoints += preview.siteBonus;
+
+  state.resolvedTriangles.add(triangle.id);
+
+  const siteText =
+    preview.sites.length > 0
+      ? `, site bonus +${preview.siteBonus}`
+      : "";
+  const lengthText = preview.lengthBonus ? ", full-length bonus +1" : "";
+
+  addLog(
+    state,
+    `${owner.name} claimed a side-${triangle.sideLength} coverage triangle for +${preview.total} (${preview.area} area${siteText}${lengthText}).`
+  );
+
+  return preview;
+}
+
+
+/* src/render.js */
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+function render(state, actions) {
+  renderBoard(state, actions);
+  renderPanel(state);
+}
+
+function renderBoard(state, actions) {
+  const svg = document.querySelector("#board-svg");
+  svg.innerHTML = "";
+  svg.setAttribute("viewBox", state.grid.viewBox);
+
+  const background = createSvg("rect", {
+    x: 0,
+    y: 0,
+    width: "100%",
+    height: "100%",
+    fill: "#151713"
+  });
+  svg.append(background);
+
+  const labelLayer = createSvg("g", {});
+  addCityLabel(labelLayer, "NORTH RIDGE", 94, 48);
+  addCityLabel(labelLayer, "HARBOR SUPPLY", 470, 514);
+  addCityLabel(labelLayer, "MEDICAL CORRIDOR", 436, 112);
+  addCityLabel(labelLayer, "OLD POWER LOOP", 132, 470);
+  addMapNote(labelLayer, "collapsed exchange", 312, 336);
+  addMapNote(labelLayer, "field relay route", 414, 232);
+  labelLayer.append(
+    createSvg("path", {
+      d: "M155 160 L188 190 L174 232 L214 260 L198 304 L238 330",
+      class: "hazard-line"
+    })
+  );
+  labelLayer.append(
+    createSvg("path", {
+      d: "M430 122 L402 164 L430 202 L396 250 L424 292",
+      class: "hazard-line"
+    })
+  );
+  svg.append(labelLayer);
+
+  const cellLayer = createSvg("g", {});
+  for (const cell of state.grid.cells) {
+    const ownerId = state.cellOwners.get(cell.id);
+    const owner = ownerId ? getPlayer(state, ownerId) : null;
+    const polygon = createSvg("polygon", {
+      points: cell.points.map((point) => `${point.x},${point.y}`).join(" "),
+      class: `cell-fill ${state.lastClaimedCells.has(cell.id) ? "claim-flash" : ""}`,
+      fill: owner ? owner.color : "transparent",
+      opacity: owner ? "0.38" : "0.16"
+    });
+    cellLayer.append(polygon);
+  }
+  svg.append(cellLayer);
+
+  const potentialLayer = createSvg("g", {});
+  for (const edge of state.grid.edges) {
+    const a = state.grid.nodesById.get(edge.a);
+    const b = state.grid.nodesById.get(edge.b);
+    potentialLayer.append(
+      createSvg("line", {
+        x1: a.x,
+        y1: a.y,
+        x2: b.x,
+        y2: b.y,
+        class: "potential-edge"
+      })
+    );
+  }
+  svg.append(potentialLayer);
+
+  const claimedLayer = createSvg("g", {});
+  for (const edge of state.grid.edges) {
+    const ownerId = state.edgeOwners.get(edge.id);
+    if (!ownerId) {
+      continue;
+    }
+    const owner = getPlayer(state, ownerId);
+    const a = state.grid.nodesById.get(edge.a);
+    const b = state.grid.nodesById.get(edge.b);
+    claimedLayer.append(
+      createSvg("line", {
+        x1: a.x,
+        y1: a.y,
+        x2: b.x,
+        y2: b.y,
+        class: "claimed-edge",
+        stroke: owner.color,
+        style: `color: ${owner.color}`
+      })
+    );
+  }
+  svg.append(claimedLayer);
+
+  const siteLayer = createSvg("g", {});
+  for (const site of state.grid.sites) {
+    const collected = state.collectedSites.has(site.id);
+    const marker = createSvg("g", {
+      class: `site-marker ${collected ? "collected" : ""}`
+    });
+    marker.append(
+      createSvg("circle", {
+        cx: site.x,
+        cy: site.y,
+        r: 18
+      })
+    );
+    marker.append(createSiteIcon(site));
+    siteLayer.append(marker);
+  }
+  svg.append(siteLayer);
+
+  const legalLayer = createSvg("g", {});
+  const activePlayer = getActivePlayer(state);
+  for (const move of state.legalMoves) {
+    const start = state.grid.nodesById.get(move.startId);
+    const end = state.grid.nodesById.get(move.endId);
+    const line = createSvg("line", {
+      x1: start.x,
+      y1: start.y,
+      x2: end.x,
+      y2: end.y,
+      class: "legal-line",
+      stroke: activePlayer.color,
+      tabindex: 0,
+      "data-move-id": move.id
+    });
+    line.addEventListener("click", () => actions.onMoveSelected(move.id));
+    line.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        actions.onMoveSelected(move.id);
+      }
+    });
+    legalLayer.append(line);
+  }
+  svg.append(legalLayer);
+
+  const nodeLayer = createSvg("g", {});
+  for (const node of state.grid.nodes) {
+    nodeLayer.append(
+      createSvg("circle", {
+        cx: node.x,
+        cy: node.y,
+        r: 3.2,
+        class: "node-dot"
+      })
+    );
+  }
+  svg.append(nodeLayer);
+}
+
+function renderPanel(state) {
+  const activePlayer = getActivePlayer(state);
+  const currentPlayer = document.querySelector("#current-player");
+  currentPlayer.innerHTML = `
+    <span class="team-dot" style="background:${activePlayer.color}; color:${activePlayer.color}"></span>
+    <span>${activePlayer.name}</span>
+  `;
+
+  const instruction = document.querySelector("#instruction-text");
+  if (state.gameOver) {
+    instruction.textContent = "Game complete. Review the final coverage result.";
+  } else if (state.awaitingTurnResult) {
+    instruction.textContent = "Review the turn result, then continue to the next team.";
+  } else if (state.pendingResolution) {
+    instruction.textContent = "Resolve the completed coverage triangle.";
+  } else if (!state.hasRolled) {
+    instruction.textContent = "Roll the die to determine this turn's signal line length.";
+  } else if (state.legalMoves.length === 0) {
+    instruction.textContent = "No legal signal line is available. The turn will pass.";
+  } else if (state.emergencyShortening) {
+    instruction.textContent = `Emergency Shortening: no length-${state.diceValue} line exists. Choose a length-${state.activeLineLength} line.`;
+  } else {
+    instruction.textContent = `Choose a legal length-${state.diceValue} signal line.`;
+  }
+
+  const diceDisplay = document.querySelector("#dice-display");
+  diceDisplay.textContent = state.diceValue ?? "-";
+
+  const rollButton = document.querySelector("#roll-dice");
+  rollButton.disabled =
+    state.gameOver ||
+    state.hasRolled ||
+    state.awaitingTurnResult ||
+    Boolean(state.pendingResolution);
+
+  const scoreList = document.querySelector("#score-list");
+  scoreList.innerHTML = state.players
+    .map(
+      (player) => `
+        <div class="score-row">
+          <span class="team-name">
+            <span class="team-dot" style="background:${player.color}; color:${player.color}"></span>
+            <span>${player.name}</span>
+          </span>
+          <span class="score-value">${player.score}</span>
+        </div>
+      `
+    )
+    .join("");
+
+  const turnSummary = document.querySelector("#turn-summary");
+  turnSummary.innerHTML = state.players
+    .map(
+      (player) => `
+        <div class="turn-row">
+          <span>${player.name}</span>
+          <strong>${state.turnsTaken[player.id]} / ${state.maxTurnsPerPlayer}</strong>
+        </div>
+      `
+    )
+    .join("");
+
+  const missionProgress = document.querySelector("#mission-progress");
+  const claimedPercent = Math.round((state.cellOwners.size / state.grid.cells.length) * 100);
+  const targetPercent = 70;
+  const targetProgress = Math.min(100, Math.round((claimedPercent / targetPercent) * 100));
+  missionProgress.innerHTML = `
+    <div class="progress-bar" aria-hidden="true">
+      <div class="progress-fill" style="width:${targetProgress}%"></div>
+    </div>
+    <div class="progress-meta">
+      <span>${claimedPercent}% city coverage</span>
+      <strong>${targetPercent}% early-end target</strong>
+    </div>
+  `;
+
+  const log = document.querySelector("#game-log");
+  log.innerHTML = state.gameLog.map((message) => `<li>${message}</li>`).join("");
+}
+
+function renderEndScreen(state, winnerSummary) {
+  const title = document.querySelector("#winner-title");
+  if (winnerSummary.winners.length === 1) {
+    title.textContent = `${winnerSummary.winners[0].name} wins`;
+  } else {
+    title.textContent = "Shared victory";
+  }
+
+  const endReason = document.querySelector("#end-reason");
+  endReason.textContent = `End reason: ${state.endReason ?? "mission complete"}.`;
+
+  const finalScores = document.querySelector("#final-scores");
+  finalScores.innerHTML = winnerSummary.sorted
+    .map(
+      (player) => `
+        <div class="final-row">
+          <span class="team-name">
+            <span class="team-dot" style="background:${player.color}; color:${player.color}"></span>
+            <span>${player.name}</span>
+          </span>
+          <strong>${player.score} pts, ${player.claimedCells} area, ${player.collectedSites} sites</strong>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function createSvg(tag, attributes) {
+  const element = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+
+function createSiteIcon(site) {
+  const group = createSvg("g", {
+    class: `site-icon site-icon-${site.icon}`,
+    transform: `translate(${site.x - 11} ${site.y - 11})`
+  });
+
+  if (site.icon === "shelter") {
+    group.append(createSvg("path", { d: "M2 12 L11 4 L20 12" }));
+    group.append(createSvg("path", { d: "M5 11 L5 20 L17 20 L17 11" }));
+    group.append(createSvg("path", { d: "M9 20 L9 15 L13 15 L13 20" }));
+    group.append(createSvg("circle", { cx: 11, cy: 11, r: 1.6 }));
+    return group;
+  }
+
+  if (site.icon === "hospital") {
+    group.append(createSvg("path", { d: "M11 3 L11 19" }));
+    group.append(createSvg("path", { d: "M3 11 L19 11" }));
+    return group;
+  }
+
+  if (site.icon === "relay") {
+    group.append(createSvg("path", { d: "M11 19 L11 9" }));
+    group.append(createSvg("path", { d: "M7 19 L15 19" }));
+    group.append(createSvg("path", { d: "M8 9 L11 5 L14 9" }));
+    group.append(createSvg("path", { d: "M4 8 Q11 1 18 8" }));
+    group.append(createSvg("path", { d: "M6 12 Q11 7 16 12" }));
+    return group;
+  }
+
+  if (site.icon === "power") {
+    group.append(createSvg("path", { d: "M13 2 L5 13 L11 13 L9 20 L17 9 L11 9 Z" }));
+    return group;
+  }
+
+  group.append(createSvg("path", { d: "M4 8 L11 4 L18 8 L18 18 L4 18 Z" }));
+  group.append(createSvg("path", { d: "M4 8 L11 12 L18 8" }));
+  group.append(createSvg("path", { d: "M11 12 L11 20" }));
+  return group;
+}
+
+function addCityLabel(layer, text, x, y) {
+  const label = createSvg("text", {
+    x,
+    y,
+    class: "city-label"
+  });
+  label.textContent = text;
+  layer.append(label);
+}
+
+function addMapNote(layer, text, x, y) {
+  const label = createSvg("text", {
+    x,
+    y,
+    class: "map-note"
+  });
+  label.textContent = text;
+  layer.append(label);
+}
+
+
+/* src/ui.js */
+function showScreen(screenName) {
+  document.querySelector("#start-screen").classList.toggle("hidden", screenName !== "start");
+  document.querySelector("#game-screen").classList.toggle("hidden", screenName !== "game");
+  document.querySelector("#end-screen").classList.toggle("hidden", screenName !== "end");
+}
+
+function showHelpModal() {
+  showModal("How to Play", `
+    <p><strong>Story:</strong> After the 04:17 aftershock, emergency teams rebuild a broken city signal web. A line is a temporary relay. A completed triangle is stable coverage.</p>
+    <ol>
+      <li>Choose 2 or 3 players.</li>
+      <li>Roll the die. The result is the exact signal-line length for this turn. The game uses a balanced dice sequence so every team receives fair length opportunities.</li>
+      <li>Click one highlighted straight line on the triangular grid.</li>
+      <li>When all three sides of a triangle are occupied, it becomes a coverage zone.</li>
+      <li>Triangle owner = the player with the most boundary edges. If tied, the closing player owns it.</li>
+      <li>Bigger triangles claim every still-unclaimed small triangle cell inside them.</li>
+      <li>After a line is placed, all completed triangles resolve automatically. Review the result, then press Next Turn.</li>
+    </ol>
+    <p><strong>Score:</strong> Coverage Score = newly claimed cells + critical-site bonuses + 1 bonus if a full dice-length line completes a scoring triangle.</p>
+    <p><strong>Win:</strong> Highest Coverage Score wins. Ties go to more claimed area, then more collected sites. If still tied, the result is a shared victory.</p>
+    <p><strong>End:</strong> 2-player games give each player 12 turns. 3-player games give each player 10 turns. The game can also end at 70% city coverage or when no legal lines remain.</p>
+  `);
+}
+
+function showTurnResultModal(state, summary, onNext) {
+  const gainRows = state.players
+    .map((player) => {
+      const gain = summary.teamGains[player.id];
+      return `
+        <div class="gain-row" style="--team-color:${player.color}">
+          <span>
+            <span class="team-dot" style="background:${player.color}; color:${player.color}"></span>
+            ${player.name}
+          </span>
+          <strong>+${gain.total}</strong>
+        </div>
+      `;
+    })
+    .join("");
+
+  const details =
+    summary.resolved.length > 0
+      ? summary.resolved
+          .map((result) => {
+            const owner = getPlayer(state, result.ownerId);
+            const siteText =
+              result.sites.length > 0
+                ? ` Sites: ${result.sites.map((site) => `${site.name} +${site.bonus}`).join(", ")}.`
+                : "";
+            const lengthText = result.lengthBonus > 0 ? " Full-length closure +1." : "";
+            return `
+              <li>
+                <strong>${owner.name}</strong> secured a side-${result.sideLength} ${result.orientation} triangle:
+                +${result.area} area, +${result.siteBonus} sites, +${result.lengthBonus} line bonus.
+                <strong>Total +${result.total}</strong>.${siteText}${lengthText}
+              </li>
+            `;
+          })
+          .join("")
+      : `<li>No stable coverage triangle was completed. All teams gain +0 this turn.</li>`;
+
+  showModal(
+    "Turn Result",
+    `
+      <p><strong>${summary.activePlayerName}</strong> placed a length-${summary.lineLength} signal line. Results are locked in.</p>
+      <div class="turn-gains">${gainRows}</div>
+      <ol class="result-details">${details}</ol>
+      <button id="next-turn" data-testid="next-turn" class="primary-button full next-turn-button">Next Turn</button>
+    `,
+    { closable: false }
+  );
+
+  document.querySelector("#next-turn").addEventListener("click", onNext);
+}
+
+function showModal(title, bodyHtml, options = {}) {
+  const backdrop = document.querySelector("#modal-backdrop");
+  const modalTitle = document.querySelector("#modal-title");
+  const modalBody = document.querySelector("#modal-body");
+  const closeButton = document.querySelector("#modal-close");
+
+  modalTitle.textContent = title;
+  modalBody.innerHTML = bodyHtml;
+  closeButton.classList.toggle("hidden", options.closable === false);
+  backdrop.classList.remove("hidden");
+  backdrop.setAttribute("aria-hidden", "false");
+}
+
+function closeModal() {
+  const backdrop = document.querySelector("#modal-backdrop");
+  backdrop.classList.add("hidden");
+  backdrop.setAttribute("aria-hidden", "true");
+}
+
+
+/* src/input.js */
+function setupPlayerCountButtons(onSelect) {
+  document.querySelectorAll("[data-player-count]").forEach((button) => {
+    button.addEventListener("click", () => {
+      document
+        .querySelectorAll("[data-player-count]")
+        .forEach((candidate) => candidate.classList.remove("selected"));
+      button.classList.add("selected");
+      onSelect(Number(button.dataset.playerCount));
+    });
+  });
+}
+
+
+/* src/main.js */
+let selectedPlayerCount = 2;
+let state = null;
+
+const debugEnabled = new URLSearchParams(window.location.search).has("debug");
+document.querySelector("#debug-dice-wrap").classList.toggle("hidden", !debugEnabled);
+
+setupPlayerCountButtons((count) => {
+  selectedPlayerCount = count;
+});
+
+document.querySelector("#start-game").addEventListener("click", () => {
+  startGame(selectedPlayerCount);
+});
+
+document.querySelector("#restart-game").addEventListener("click", () => {
+  startGame(selectedPlayerCount);
+});
+
+document.querySelector("#play-again").addEventListener("click", () => {
+  showScreen("start");
+});
+
+document.querySelectorAll("[data-open-help]").forEach((button) => {
+  button.addEventListener("click", showHelpModal);
+});
+
+document.querySelector("#modal-close").addEventListener("click", closeModal);
+
+document.querySelector("#roll-dice").addEventListener("click", () => {
+  if (!state || state.hasRolled || state.gameOver) {
+    return;
+  }
+
+  const debugValue = document.querySelector("#debug-dice").value;
+  state.diceValue = debugEnabled && debugValue ? Number(debugValue) : rollBalancedD6(state);
+  state.hasRolled = true;
+
+  const diceDisplay = document.querySelector("#dice-display");
+  diceDisplay.classList.remove("rolling");
+  void diceDisplay.offsetWidth;
+  diceDisplay.classList.add("rolling");
+
+  const moves = computeLegalMovesForTurn(state);
+  if (moves.length === 0) {
+    addLog(state, `${getActivePlayer(state).name} has no legal signal line and must pass.`);
+    completeTurn(state);
+    afterTurnChange();
+    return;
+  }
+
+  render(state, actions);
+});
+
+const actions = {
+  onMoveSelected(moveId) {
+    if (!state || state.gameOver || state.pendingResolution || state.awaitingTurnResult) {
+      return;
+    }
+
+    const closingPlayer = getActivePlayer(state);
+    const move = placeLine(state, moveId);
+    if (!move) {
+      return;
+    }
+
+    const summary = resolveMoveAutomatically(move, closingPlayer.id, closingPlayer.name);
+    state.awaitingTurnResult = true;
+    render(state, actions);
+    showTurnResultModal(state, summary, () => {
+      closeModal();
+      completeTurn(state);
+      afterTurnChange();
+    });
+  }
+};
+
+function startGame(playerCount) {
+  selectedPlayerCount = playerCount;
+  state = createGameState(playerCount);
+  closeModal();
+  showScreen("game");
+  render(state, actions);
+}
+
+function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {
+  const resolved = [];
+  const teamGains = Object.fromEntries(
+    state.players.map((player) => [
+      player.id,
+      {
+        total: 0,
+        area: 0,
+        siteBonus: 0,
+        lengthBonus: 0,
+        triangles: 0
+      }
+    ])
+  );
+
+  let fullLengthBonusAvailable = move.fullLength;
+  let pending = findCompletedTriangles(state, move.pathEdges);
+
+  while (pending.length > 0) {
+    const triangle = pending[0];
+    const result = resolveTriangle(state, triangle, closingPlayerId, fullLengthBonusAvailable);
+    const gain = teamGains[result.ownerId];
+
+    gain.total += result.total;
+    gain.area += result.area;
+    gain.siteBonus += result.siteBonus;
+    gain.lengthBonus += result.lengthBonus;
+    gain.triangles += 1;
+    resolved.push(result);
+
+    fullLengthBonusAvailable = false;
+    pending = findCompletedTriangles(state, move.pathEdges);
+  }
+
+  if (resolved.length === 0) {
+    addLog(state, "No stable coverage triangle completed this turn.");
+  }
+
+  return {
+    activePlayerName,
+    lineLength: move.length,
+    emergency: move.emergency,
+    resolved,
+    teamGains
+  };
+}
+
+function afterTurnChange() {
+  render(state, actions);
+  if (state.gameOver) {
+    const summary = getWinnerSummary(state);
+    renderEndScreen(state, summary);
+    showScreen("end");
+  }
+}
+
+showScreen("start");
+
+</script>
+  </body>
+</html>

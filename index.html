@@ -922,23 +922,77 @@ p {
   filter: drop-shadow(0 0 7px currentColor);
 }
 
-.legal-line {
-  stroke-width: 13;
-  stroke-linecap: round;
-  opacity: 0.24;
+.legal-move {
   cursor: pointer;
-  transition: opacity 0.14s ease, stroke-width 0.14s ease;
 }
 
-.legal-line:hover,
-.legal-line:focus {
-  opacity: 0.62;
-  stroke-width: 16;
+.legal-hit-line {
+  stroke: rgba(255, 255, 255, 0.001);
+  stroke-width: 24;
+  stroke-linecap: round;
+  pointer-events: all;
+}
+
+.legal-line {
+  stroke-width: 5;
+  stroke-linecap: round;
+  opacity: 0.1;
+  pointer-events: none;
+  transition: opacity 0.14s ease, stroke-width 0.14s ease, filter 0.14s ease;
+}
+
+.legal-move:hover .legal-line,
+.legal-move:focus .legal-line {
+  opacity: 0.92;
+  stroke-width: 18;
+  filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 18px currentColor);
+}
+
+.score-burst-layer {
+  pointer-events: none;
+}
+
+.score-burst {
+  color: var(--burst-color);
+  font-size: 34px;
+  font-weight: 1000;
+  letter-spacing: 0;
+  paint-order: stroke;
+  stroke: rgba(6, 8, 12, 0.88);
+  stroke-width: 6px;
+  filter: drop-shadow(0 0 7px var(--burst-color)) drop-shadow(0 0 15px var(--burst-color));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: scoreBurst 1.25s cubic-bezier(0.18, 0.78, 0.24, 1) forwards;
+}
+
+@keyframes scoreBurst {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.35);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.18);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1.02);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px) scale(1.52);
+  }
 }
 
 .node-dot {
   fill: #f4dfb3;
   opacity: 0.72;
+  pointer-events: none;
+}
+
+.site-marker {
+  pointer-events: none;
 }
 
 .site-marker circle {
@@ -1737,6 +1791,7 @@ function createGameState(playerCount = 2) {
     cellOwners: new Map(),
     resolvedTriangles: new Set(),
     collectedSites: new Map(),
+    scoreBursts: [],
     gameLog: [
       "Command channel open. Roll the die to deploy the first signal link."
     ],
@@ -2187,23 +2242,35 @@ function renderBoard(state, actions) {
   for (const move of state.legalMoves) {
     const start = state.grid.nodesById.get(move.startId);
     const end = state.grid.nodesById.get(move.endId);
+    const moveGroup = createSvg("g", {
+      class: "legal-move",
+      tabindex: 0,
+      "data-move-id": move.id,
+      style: `color:${activePlayer.color}`
+    });
+    const hitLine = createSvg("line", {
+      x1: start.x,
+      y1: start.y,
+      x2: end.x,
+      y2: end.y,
+      class: "legal-hit-line"
+    });
     const line = createSvg("line", {
       x1: start.x,
       y1: start.y,
       x2: end.x,
       y2: end.y,
       class: "legal-line",
-      stroke: activePlayer.color,
-      tabindex: 0,
-      "data-move-id": move.id
+      stroke: activePlayer.color
     });
-    line.addEventListener("click", () => actions.onMoveSelected(move.id));
-    line.addEventListener("keydown", (event) => {
+    moveGroup.addEventListener("click", () => actions.onMoveSelected(move.id));
+    moveGroup.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         actions.onMoveSelected(move.id);
       }
     });
-    legalLayer.append(line);
+    moveGroup.append(hitLine, line);
+    legalLayer.append(moveGroup);
   }
   svg.append(legalLayer);
 
@@ -2219,6 +2286,24 @@ function renderBoard(state, actions) {
     );
   }
   svg.append(nodeLayer);
+
+  const scoreBurstLayer = createSvg("g", {
+    class: "score-burst-layer"
+  });
+  for (const burst of state.scoreBursts) {
+    const burstText = createSvg("text", {
+      x: burst.x,
+      y: burst.y,
+      class: "score-burst",
+      fill: burst.color,
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      style: `--burst-color:${burst.color}`
+    });
+    burstText.textContent = burst.text;
+    scoreBurstLayer.append(burstText);
+  }
+  svg.append(scoreBurstLayer);
 }
 
 function renderPanel(state) {
@@ -2233,7 +2318,7 @@ function renderPanel(state) {
   if (state.gameOver) {
     instruction.textContent = "Game complete. Review the final coverage result.";
   } else if (state.awaitingTurnResult) {
-    instruction.textContent = "Review the turn result, then continue to the next team.";
+    instruction.textContent = "Signal result locked. Watch the score burst, then the next team begins.";
   } else if (state.pendingResolution) {
     instruction.textContent = "Resolve the completed coverage triangle.";
   } else if (!state.hasRolled) {
@@ -2414,63 +2499,12 @@ function showHelpModal() {
       <li>When all three sides of a triangle are occupied, it becomes a coverage zone.</li>
       <li>Triangle owner = the player with the most boundary edges. If tied, the closing player owns it.</li>
       <li>Bigger triangles claim every still-unclaimed small triangle cell inside them.</li>
-      <li>After a line is placed, all completed triangles resolve automatically. Review the result, then press Next Turn.</li>
+      <li>After a line is placed, all completed triangles resolve automatically. Score bursts appear beside the new line, then the next team begins.</li>
     </ol>
     <p><strong>Score:</strong> Coverage Score = newly claimed cells + critical-site bonuses + 1 bonus if a full dice-length line completes a scoring triangle.</p>
     <p><strong>Win:</strong> Highest Coverage Score wins. Ties go to more claimed area, then more collected sites. If still tied, the result is a shared victory.</p>
     <p><strong>End:</strong> 2-player games give each player 12 turns. 3-player games give each player 10 turns. The game can also end at 70% city coverage or when no legal lines remain.</p>
   `);
-}
-
-function showTurnResultModal(state, summary, onNext) {
-  const gainRows = state.players
-    .map((player) => {
-      const gain = summary.teamGains[player.id];
-      return `
-        <div class="gain-row" style="--team-color:${player.color}">
-          <span>
-            <span class="team-dot" style="background:${player.color}; color:${player.color}"></span>
-            ${player.name}
-          </span>
-          <strong>+${gain.total}</strong>
-        </div>
-      `;
-    })
-    .join("");
-
-  const details =
-    summary.resolved.length > 0
-      ? summary.resolved
-          .map((result) => {
-            const owner = getPlayer(state, result.ownerId);
-            const siteText =
-              result.sites.length > 0
-                ? ` Sites: ${result.sites.map((site) => `${site.name} +${site.bonus}`).join(", ")}.`
-                : "";
-            const lengthText = result.lengthBonus > 0 ? " Full-length closure +1." : "";
-            return `
-              <li>
-                <strong>${owner.name}</strong> secured a side-${result.sideLength} ${result.orientation} triangle:
-                +${result.area} area, +${result.siteBonus} sites, +${result.lengthBonus} line bonus.
-                <strong>Total +${result.total}</strong>.${siteText}${lengthText}
-              </li>
-            `;
-          })
-          .join("")
-      : `<li>No stable coverage triangle was completed. All teams gain +0 this turn.</li>`;
-
-  showModal(
-    "Turn Result",
-    `
-      <p><strong>${summary.activePlayerName}</strong> placed a length-${summary.lineLength} signal line. Results are locked in.</p>
-      <div class="turn-gains">${gainRows}</div>
-      <ol class="result-details">${details}</ol>
-      <button id="next-turn" data-testid="next-turn" class="primary-button full next-turn-button">Next Turn</button>
-    `,
-    { closable: false }
-  );
-
-  document.querySelector("#next-turn").addEventListener("click", onNext);
 }
 
 function showModal(title, bodyHtml, options = {}) {
@@ -2510,6 +2544,10 @@ function setupPlayerCountButtons(onSelect) {
 /* src/main.js */
 let selectedPlayerCount = 2;
 let state = null;
+let stateVersion = 0;
+let turnAdvanceTimer = null;
+const SCORE_BURST_DURATION = 1250;
+const QUICK_ADVANCE_DURATION = 360;
 
 const debugEnabled = new URLSearchParams(window.location.search).has("debug");
 document.querySelector("#debug-dice-wrap").classList.toggle("hidden", !debugEnabled);
@@ -2574,17 +2612,30 @@ const actions = {
     }
 
     const summary = resolveMoveAutomatically(move, closingPlayer.id, closingPlayer.name);
+    state.scoreBursts = createScoreBursts(state, move, summary);
     state.awaitingTurnResult = true;
     render(state, actions);
-    showTurnResultModal(state, summary, () => {
-      closeModal();
+
+    const currentVersion = stateVersion;
+    const delay = state.scoreBursts.length > 0 ? SCORE_BURST_DURATION : QUICK_ADVANCE_DURATION;
+    turnAdvanceTimer = window.setTimeout(() => {
+      if (!state || currentVersion !== stateVersion) {
+        return;
+      }
+      turnAdvanceTimer = null;
+      state.scoreBursts = [];
       completeTurn(state);
       afterTurnChange();
-    });
+    }, delay);
   }
 };
 
 function startGame(playerCount) {
+  if (turnAdvanceTimer) {
+    window.clearTimeout(turnAdvanceTimer);
+    turnAdvanceTimer = null;
+  }
+  stateVersion += 1;
   selectedPlayerCount = playerCount;
   state = createGameState(playerCount);
   closeModal();
@@ -2637,6 +2688,50 @@ function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {
     resolved,
     teamGains
   };
+}
+
+function createScoreBursts(currentState, move, summary) {
+  const start = currentState.grid.nodesById.get(move.startId);
+  const end = currentState.grid.nodesById.get(move.endId);
+  if (!start || !end) {
+    return [];
+  }
+
+  const gains = currentState.players
+    .map((player) => ({
+      player,
+      gain: summary.teamGains[player.id]
+    }))
+    .filter(({ gain }) => gain && gain.total > 0);
+
+  if (gains.length === 0) {
+    return [];
+  }
+
+  const midpoint = {
+    x: (start.x + end.x) / 2,
+    y: (start.y + end.y) / 2
+  };
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const normal = {
+    x: -dy / length,
+    y: dx / length
+  };
+  const spread = 38;
+  const centerOffset = (gains.length - 1) / 2;
+
+  return gains.map(({ player, gain }, index) => {
+    const offset = index - centerOffset;
+    return {
+      id: `${Date.now()}-${player.id}-${index}`,
+      text: `+${gain.total}`,
+      color: player.color,
+      x: midpoint.x + normal.x * offset * spread,
+      y: midpoint.y + normal.y * offset * spread - 20
+    };
+  });
 }
 
 function afterTurnChange() {

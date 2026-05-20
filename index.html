@@ -26,9 +26,15 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at 18% 12%, rgba(232, 94, 79, 0.12), transparent 24%),
     radial-gradient(circle at 84% 76%, rgba(58, 215, 199, 0.11), transparent 25%),
@@ -58,11 +64,14 @@ button:disabled {
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .screen {
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .hidden {
@@ -74,8 +83,8 @@ button:disabled {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 18px;
-  padding: 34px 20px;
+  gap: clamp(8px, 1.6vh, 16px);
+  padding: clamp(12px, 2.5vh, 26px) 20px;
   text-align: center;
 }
 
@@ -187,9 +196,9 @@ button:disabled {
 }
 
 .game-logo-mark {
-  width: 430px;
-  height: 430px;
-  margin-bottom: -26px;
+  width: clamp(220px, 31vh, 330px);
+  height: clamp(220px, 31vh, 330px);
+  margin-bottom: clamp(-22px, -2vh, -10px);
   isolation: isolate;
 }
 
@@ -262,7 +271,7 @@ button:disabled {
   border: 1px solid rgba(232, 94, 79, 0.38);
   background: rgba(232, 94, 79, 0.12);
   color: #ffd9bc;
-  padding: 8px 12px;
+  padding: 6px 10px;
   font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.1em;
@@ -270,7 +279,7 @@ button:disabled {
 }
 
 .asset-credit {
-  margin: 4px 0 0;
+  margin: 0;
   color: rgba(185, 170, 142, 0.68);
   font-size: 0.72rem;
 }
@@ -324,7 +333,7 @@ p {
 .end-screen h1 {
   max-width: 880px;
   margin-bottom: 0;
-  font-size: 4.7rem;
+  font-size: clamp(2.4rem, 6.7vh, 4.25rem);
   line-height: 0.95;
 }
 
@@ -343,7 +352,7 @@ p {
 .start-screen h1::after {
   content: "MAYDAY SIGNAL BREACH";
   display: block;
-  margin-top: 10px;
+  margin-top: 6px;
   color: var(--danger);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 0.88rem;
@@ -356,14 +365,14 @@ p {
 .subtitle {
   max-width: 740px;
   color: var(--muted);
-  font-size: 1.08rem;
+  font-size: clamp(0.92rem, 1.65vh, 1.06rem);
   line-height: 1.6;
 }
 
 .story-intro {
   max-width: 980px;
   color: #ffe5c0;
-  font-size: 1.42rem;
+  font-size: clamp(1rem, 2.15vh, 1.28rem);
   font-weight: 800;
   line-height: 1.45;
   text-shadow: 0 0 18px rgba(255, 84, 52, 0.2);
@@ -372,7 +381,7 @@ p {
 .mission-brief {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   width: min(940px, 100%);
   text-align: left;
 }
@@ -380,7 +389,7 @@ p {
 .mission-brief > div {
   border-top: 2px solid rgba(58, 215, 199, 0.46);
   background: rgba(23, 29, 27, 0.72);
-  padding: 14px;
+  padding: 10px 12px;
 }
 
 .mission-brief strong {
@@ -407,7 +416,8 @@ p {
 
 .player-select,
 .start-actions,
-.header-actions {
+.header-actions,
+.board-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -440,6 +450,19 @@ p {
   box-shadow: 0 0 22px rgba(58, 215, 199, 0.22);
 }
 
+#roll-dice {
+  min-height: 64px;
+  border: 2px solid rgba(255, 209, 102, 0.42);
+  background: linear-gradient(135deg, #ff744f 0%, #e85e4f 48%, #a91f19 100%);
+  color: #fff7ef;
+  font-size: 1.18rem;
+  font-weight: 950;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 22px rgba(232, 94, 79, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
 .secondary-button {
   border: 1px solid var(--line);
   background: rgba(30, 35, 31, 0.86);
@@ -457,43 +480,53 @@ p {
 .game-screen {
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: 14px;
-  padding: 18px;
+  gap: 6px;
+  padding: 8px 14px 12px;
 }
 
 .game-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 70px;
+  justify-content: flex-start;
+  gap: 20px;
+  min-height: 84px;
 }
 
 .game-header h1 {
   margin: 4px 0 0;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  color: #fff7ef;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(2.1rem, 3.5vw, 3.45rem);
+  letter-spacing: 0.03em;
+  line-height: 0.92;
+  text-shadow:
+    0 3px 0 #46140a,
+    0 0 16px rgba(255, 84, 52, 0.45),
+    0 0 30px rgba(57, 227, 255, 0.28);
 }
 
 .logo-lockup {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .mini-logo {
   position: relative;
   display: grid;
   place-items: center;
-  width: 70px;
-  height: 62px;
+  width: 88px;
+  height: 78px;
 }
 
 .mini-logo img {
-  width: 70px;
-  height: 62px;
+  width: 88px;
+  height: 78px;
   object-fit: contain;
   opacity: 0.9;
-  filter: drop-shadow(0 0 8px rgba(58, 215, 199, 0.55));
+  filter:
+    drop-shadow(0 0 12px rgba(58, 215, 199, 0.58))
+    drop-shadow(0 0 20px rgba(232, 94, 79, 0.28));
 }
 
 .mini-logo svg {
@@ -518,10 +551,10 @@ p {
 }
 
 .game-layout {
-  display: grid;
-  grid-template-columns: minmax(520px, 1fr) 340px;
-  gap: 16px;
+  position: relative;
+  display: block;
   min-height: 0;
+  height: 100%;
 }
 
 .board-panel,
@@ -535,9 +568,43 @@ p {
 }
 
 .board-panel {
-  min-height: 650px;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   position: relative;
+}
+
+.board-actions {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 4;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.board-actions .secondary-button {
+  min-height: 54px;
+  padding: 0 24px;
+  border-width: 2px;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: 1.04rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.board-actions .secondary-button:first-child {
+  border-color: rgba(58, 215, 199, 0.78);
+  background: linear-gradient(135deg, #67fff0, #1fb7af);
+  color: #061411;
+  box-shadow: 0 0 20px rgba(58, 215, 199, 0.28);
+}
+
+.board-actions .secondary-button:nth-child(2) {
+  border-color: rgba(255, 209, 102, 0.78);
+  background: linear-gradient(135deg, #ffd166, #f39a38 58%, #e85e4f);
+  color: #1d0a05;
+  box-shadow: 0 0 20px rgba(243, 154, 56, 0.3);
 }
 
 .board-panel::before {
@@ -554,25 +621,79 @@ p {
 .board-svg {
   width: 100%;
   height: 100%;
-  min-height: 650px;
+  min-height: 0;
   display: block;
   position: relative;
   z-index: 1;
 }
 
 .control-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 14px;
-  min-height: 650px;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .status-block {
+  position: absolute;
+  width: min(286px, 28vw);
   border: 1px solid rgba(218, 208, 181, 0.16);
   border-radius: var(--radius);
-  background: rgba(18, 22, 20, 0.72);
+  background: rgba(13, 17, 15, 0.78);
   padding: 12px;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.mission-status {
+  top: 12px;
+  right: 12px;
+}
+
+.active-status {
+  top: 430px;
+  left: 14px;
+}
+
+.score-status {
+  left: 14px;
+  top: 602px;
+}
+
+.turn-status {
+  right: 14px;
+  top: 124px;
+}
+
+.victory-rules {
+  right: 14px;
+  top: 506px;
+}
+
+.site-legend {
+  right: 14px;
+  top: 284px;
+}
+
+.dice-block {
+  left: 50%;
+  bottom: 14px;
+  width: min(560px, 46vw);
+  transform: translateX(-50%);
+  grid-template-columns: auto minmax(150px, 0.7fr) 1fr;
+  align-items: center;
+  gap: 12px;
+  background: rgba(9, 14, 13, 0.86);
+}
+
+.dice-block .label {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
 }
 
 .mission-progress {
@@ -603,9 +724,9 @@ p {
 
 .label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -614,8 +735,8 @@ p {
 .current-player {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.05rem;
+  gap: 12px;
+  font-size: 1.34rem;
   font-weight: 800;
 }
 
@@ -627,9 +748,10 @@ p {
 }
 
 .instruction-text {
-  margin: 10px 0 0;
+  margin: 12px 0 0;
   color: var(--muted);
-  line-height: 1.45;
+  font-size: 1.02rem;
+  line-height: 1.42;
 }
 
 .dice-block {
@@ -640,13 +762,13 @@ p {
 .dice-display {
   display: grid;
   place-items: center;
-  width: 74px;
-  height: 74px;
-  border: 1px solid var(--line-strong);
+  width: 98px;
+  height: 98px;
+  border: 2px solid rgba(232, 94, 79, 0.58);
   border-radius: var(--radius);
   background: #1d0f0c;
   color: var(--danger);
-  font-size: 2rem;
+  font-size: 2.85rem;
   font-weight: 900;
   text-shadow: 0 0 14px rgba(232, 94, 79, 0.58);
 }
@@ -688,7 +810,7 @@ p {
 .turn-summary,
 .final-scores {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .score-row,
@@ -696,11 +818,12 @@ p {
 .final-row {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
-  min-height: 34px;
+  min-height: 44px;
   border-bottom: 1px solid rgba(218, 208, 181, 0.12);
   color: var(--text);
+  font-size: 1.05rem;
 }
 
 .score-row:last-child,
@@ -717,7 +840,12 @@ p {
 }
 
 .score-value {
+  font-size: 1.45rem;
   font-weight: 900;
+}
+
+.turn-row strong {
+  font-size: 1.2rem;
 }
 
 .game-log {
@@ -742,6 +870,7 @@ p {
 
 .victory-rules strong {
   color: var(--yellow);
+  font-size: 1.08rem;
 }
 
 .site-grid {
@@ -756,10 +885,10 @@ p {
   gap: 7px;
   border: 1px solid rgba(218, 208, 181, 0.14);
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 8px 9px;
   color: var(--text);
   background: rgba(0, 0, 0, 0.16);
-  font-size: 0.83rem;
+  font-size: 0.92rem;
   font-weight: 800;
 }
 
@@ -1138,6 +1267,175 @@ p {
   }
 }
 
+@media (max-height: 820px) and (min-width: 981px) {
+  .start-screen,
+  .end-screen {
+    gap: 8px;
+    padding: 10px 18px;
+  }
+
+  .game-logo-mark {
+    width: clamp(190px, 27vh, 250px);
+    height: clamp(190px, 27vh, 250px);
+    margin-bottom: -20px;
+  }
+
+  .start-screen h1,
+  .end-screen h1 {
+    font-size: clamp(2rem, 5.8vh, 3.3rem);
+  }
+
+  .start-screen h1::after {
+    margin-top: 4px;
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+  }
+
+  .story-intro {
+    font-size: clamp(0.92rem, 1.95vh, 1.06rem);
+    line-height: 1.34;
+  }
+
+  .incident-code,
+  .asset-credit {
+    font-size: 0.68rem;
+  }
+
+  .mission-brief {
+    gap: 8px;
+  }
+
+  .mission-brief > div {
+    padding: 8px 10px;
+  }
+
+  .mission-brief strong {
+    margin: 4px 0 5px;
+  }
+
+  .mission-brief p {
+    font-size: 0.86rem;
+    line-height: 1.32;
+  }
+
+  .choice-button,
+  .primary-button,
+  .secondary-button {
+    min-height: 40px;
+  }
+
+  .game-screen {
+    gap: 4px;
+    padding: 6px 10px 10px;
+  }
+
+  .game-header {
+    min-height: 68px;
+  }
+
+  .game-header h1 {
+    font-size: clamp(1.7rem, 2.8vw, 2.45rem);
+  }
+
+  .mini-logo,
+  .mini-logo img {
+    width: 70px;
+    height: 62px;
+  }
+
+  .status-block {
+    width: min(270px, 26vw);
+    padding: 9px;
+  }
+
+  .label {
+    margin-bottom: 6px;
+    font-size: 0.74rem;
+  }
+
+  .active-status {
+    top: 310px;
+  }
+
+  .score-status {
+    top: 452px;
+  }
+
+  .turn-status {
+    top: 114px;
+  }
+
+  .site-legend {
+    top: 262px;
+  }
+
+  .victory-rules {
+    top: 438px;
+  }
+
+  .instruction-text,
+  .victory-rules p,
+  .progress-meta {
+    font-size: 0.84rem;
+    line-height: 1.32;
+  }
+
+  .current-player {
+    font-size: 1.08rem;
+  }
+
+  .score-row,
+  .turn-row,
+  .final-row {
+    min-height: 34px;
+    font-size: 0.92rem;
+  }
+
+  .score-value {
+    font-size: 1.22rem;
+  }
+
+  .turn-row strong {
+    font-size: 1rem;
+  }
+
+  .dice-block {
+    bottom: 8px;
+    width: min(500px, 42vw);
+    grid-template-columns: 82px minmax(134px, 0.7fr) 1fr;
+  }
+
+  .dice-display {
+    width: 82px;
+    height: 82px;
+    font-size: 2.32rem;
+  }
+
+  #roll-dice {
+    min-height: 56px;
+    font-size: 1.04rem;
+  }
+
+  .debug-dice select {
+    min-height: 32px;
+  }
+
+  .site-grid {
+    gap: 5px;
+  }
+
+  .site-grid span {
+    gap: 5px;
+    padding: 6px 7px;
+    font-size: 0.78rem;
+  }
+
+  .legend-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 @media (max-width: 980px) {
   .game-layout {
     grid-template-columns: 1fr;
@@ -1262,14 +1560,14 @@ p {
               <h1>Signal Aftershock</h1>
             </div>
           </div>
-          <div class="header-actions">
-            <button class="secondary-button compact" data-open-help>How to Play</button>
-            <button id="restart-game" class="secondary-button compact">Restart</button>
-          </div>
         </header>
 
         <main class="game-layout">
           <section class="board-panel" aria-label="Triangular city grid">
+            <div class="board-actions">
+              <button class="secondary-button compact" data-open-help>How to Play</button>
+              <button id="restart-game" class="secondary-button compact">Restart</button>
+            </div>
             <svg id="board-svg" class="board-svg" role="img" aria-label="Triangular signal map"></svg>
           </section>
 
@@ -1303,12 +1601,12 @@ p {
               </label>
             </section>
 
-            <section class="status-block">
+            <section class="status-block score-status">
               <span class="label">Scores</span>
               <div id="score-list" class="score-list"></div>
             </section>
 
-            <section class="status-block">
+            <section class="status-block turn-status">
               <span class="label">Turns</span>
               <div id="turn-summary" class="turn-summary"></div>
             </section>
@@ -1329,11 +1627,6 @@ p {
                 <span><i class="legend-icon power-icon"></i>Power +3</span>
                 <span><i class="legend-icon supply-icon"></i>Supply +2</span>
               </div>
-            </section>
-
-            <section class="status-block log-block">
-              <span class="label">Signal log</span>
-              <ol id="game-log" class="game-log"></ol>
             </section>
           </aside>
         </main>
@@ -1362,7 +1655,7 @@ p {
 const CONFIG = {
   gridSize: 7,
   spacing: 76,
-  marginX: 86,
+  marginX: 150,
   marginY: 78,
   maxTriangleSide: 4,
   claimThreshold: 0.7,
@@ -1504,41 +1797,51 @@ function polygonCentroid(points) {
 
 /* src/dice.js */
 function rollD6() {
-  return Math.floor(Math.random() * 6) + 1;
+  return randomInt(6) + 1;
 }
 
 function createBalancedDiceSequence(turnsPerPlayer) {
   const sequence = [];
   const baseCycle = [1, 2, 3, 4, 5, 6];
-  const balancedRemainder = [2, 3, 4, 5, 1, 6];
 
-  while (sequence.length + baseCycle.length <= turnsPerPlayer) {
-    sequence.push(...baseCycle);
-  }
-
-  let remainderIndex = 0;
   while (sequence.length < turnsPerPlayer) {
-    sequence.push(balancedRemainder[remainderIndex]);
-    remainderIndex += 1;
+    sequence.push(...shuffle(baseCycle));
   }
 
-  return shuffle(sequence);
+  return sequence.slice(0, turnsPerPlayer);
 }
 
 function getBalancedDiceValue(state, playerId) {
   const turnIndex = state.turnsTaken[playerId] ?? 0;
-  return state.diceSequence[turnIndex] ?? rollD6();
+  const playerSequence = state.diceSequences?.[playerId] ?? state.diceSequence ?? [];
+  return playerSequence[turnIndex] ?? rollD6();
 }
 
 function shuffle(values) {
   const shuffled = [...values];
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const swapIndex = randomInt(index + 1);
     [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
   }
 
   return shuffled;
+}
+
+function randomInt(max) {
+  const cryptoApi = globalThis.crypto;
+  if (cryptoApi?.getRandomValues) {
+    const values = new Uint32Array(1);
+    const limit = 0x100000000 - (0x100000000 % max);
+
+    do {
+      cryptoApi.getRandomValues(values);
+    } while (values[0] >= limit);
+
+    return values[0] % max;
+  }
+
+  return Math.floor(Math.random() * max);
 }
 
 
@@ -1771,14 +2074,17 @@ function createGameState(playerCount = 2) {
     collectedSites: 0,
     sitePoints: 0
   }));
+  const maxTurnsPerPlayer = playerCount === 2 ? 12 : 10;
 
   return {
     grid,
     players,
     playerCount,
     activePlayerIndex: 0,
-    maxTurnsPerPlayer: playerCount === 2 ? 12 : 10,
-    diceSequence: createBalancedDiceSequence(playerCount === 2 ? 12 : 10),
+    maxTurnsPerPlayer,
+    diceSequences: Object.fromEntries(
+      players.map((player) => [player.id, createBalancedDiceSequence(maxTurnsPerPlayer)])
+    ),
     turnsTaken: Object.fromEntries(players.map((player) => [player.id, 0])),
     totalTurnsCompleted: 0,
     diceValue: null,
@@ -2135,6 +2441,7 @@ function renderBoard(state, actions) {
   const svg = document.querySelector("#board-svg");
   svg.innerHTML = "";
   svg.setAttribute("viewBox", state.grid.viewBox);
+  svg.setAttribute("preserveAspectRatio", "xMidYMin meet");
 
   const background = createSvg("rect", {
     x: 0,
@@ -2383,7 +2690,9 @@ function renderPanel(state) {
   `;
 
   const log = document.querySelector("#game-log");
-  log.innerHTML = state.gameLog.map((message) => `<li>${message}</li>`).join("");
+  if (log) {
+    log.innerHTML = state.gameLog.map((message) => `<li>${message}</li>`).join("");
+  }
 }
 
 function renderEndScreen(state, winnerSummary) {
@@ -2494,7 +2803,7 @@ function showHelpModal() {
     <p><strong>Story:</strong> After the 04:17 aftershock, emergency teams rebuild a broken city signal web. A line is a temporary relay. A completed triangle is stable coverage.</p>
     <ol>
       <li>Choose 2 or 3 players.</li>
-      <li>Roll the die. The result is the exact signal-line length for this turn. The game uses a balanced dice sequence so every team receives fair length opportunities.</li>
+      <li>Roll the die. The result is the exact signal-line length for this turn. Each team uses its own fair-random dice stream so rolls feel unpredictable without giving one team a whole-game advantage.</li>
       <li>Click one highlighted straight line on the triangular grid.</li>
       <li>When all three sides of a triangle are occupied, it becomes a coverage zone.</li>
       <li>Triangle owner = the player with the most boundary edges. If tied, the closing player owns it.</li>

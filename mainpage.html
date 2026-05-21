@@ -1056,10 +1056,10 @@ p {
 }
 
 .legal-hit-line {
-  stroke: rgba(255, 255, 255, 0.001);
+  stroke: rgba(255, 255, 255, 0.01);
   stroke-width: 24;
   stroke-linecap: round;
-  pointer-events: all;
+  pointer-events: stroke;
 }
 
 .legal-line {
@@ -1079,6 +1079,88 @@ p {
 
 .score-burst-layer {
   pointer-events: none;
+}
+
+.signal-wave-layer {
+  pointer-events: none;
+}
+
+.signal-wave {
+  --wave-delay: 0ms;
+  fill: transparent;
+  stroke: var(--wave-color);
+  stroke-width: 4.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+  filter:
+    drop-shadow(0 0 5px var(--wave-color))
+    drop-shadow(0 0 13px var(--wave-color));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: triangleSignalWave 1.45s ease-out forwards;
+  animation-delay: var(--wave-delay);
+}
+
+.signal-wave-1 {
+  stroke-width: 3.3;
+  animation-duration: 1.52s;
+}
+
+.signal-wave-2 {
+  stroke-width: 2.4;
+  animation-duration: 1.6s;
+}
+
+.signal-wave-core {
+  --wave-delay: 0ms;
+  fill: var(--wave-color);
+  opacity: 0;
+  filter:
+    drop-shadow(0 0 8px var(--wave-color))
+    drop-shadow(0 0 18px var(--wave-color));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: signalCoreFlash 1.05s ease-out forwards;
+  animation-delay: var(--wave-delay);
+}
+
+@keyframes triangleSignalWave {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+    stroke-dasharray: 10 10;
+    stroke-dashoffset: 22;
+  }
+  14% {
+    opacity: 0.95;
+  }
+  48% {
+    opacity: 0.58;
+    stroke-dasharray: 28 9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+    stroke-dasharray: 54 18;
+    stroke-dashoffset: -34;
+  }
+}
+
+@keyframes signalCoreFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+  18% {
+    opacity: 0.72;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
 }
 
 .score-burst {
@@ -2098,6 +2180,7 @@ function createGameState(playerCount = 2) {
     resolvedTriangles: new Set(),
     collectedSites: new Map(),
     scoreBursts: [],
+    signalWaves: [],
     gameLog: [
       "Command channel open. Roll the die to deploy the first signal link."
     ],
@@ -2594,6 +2677,32 @@ function renderBoard(state, actions) {
   }
   svg.append(nodeLayer);
 
+  const signalWaveLayer = createSvg("g", {
+    class: "signal-wave-layer"
+  });
+  for (const wave of state.signalWaves ?? []) {
+    const points = wave.points.map((point) => `${point.x},${point.y}`).join(" ");
+    for (let ring = 0; ring < 3; ring += 1) {
+      signalWaveLayer.append(
+        createSvg("polygon", {
+          points,
+          class: `signal-wave signal-wave-${ring}`,
+          style: `--wave-color:${wave.color}; --wave-delay:${wave.delay + ring * 145}ms`
+        })
+      );
+    }
+    signalWaveLayer.append(
+      createSvg("circle", {
+        cx: wave.centroid.x,
+        cy: wave.centroid.y,
+        r: Math.max(5, 4 + wave.sideLength * 1.5),
+        class: "signal-wave-core",
+        style: `--wave-color:${wave.color}; --wave-delay:${wave.delay}ms`
+      })
+    );
+  }
+  svg.append(signalWaveLayer);
+
   const scoreBurstLayer = createSvg("g", {
     class: "score-burst-layer"
   });
@@ -2855,7 +2964,7 @@ let selectedPlayerCount = 2;
 let state = null;
 let stateVersion = 0;
 let turnAdvanceTimer = null;
-const SCORE_BURST_DURATION = 1250;
+const SIGNAL_WAVE_DURATION = 1650;
 const QUICK_ADVANCE_DURATION = 360;
 
 const debugEnabled = new URLSearchParams(window.location.search).has("debug");
@@ -2922,17 +3031,22 @@ const actions = {
 
     const summary = resolveMoveAutomatically(move, closingPlayer.id, closingPlayer.name);
     state.scoreBursts = createScoreBursts(state, move, summary);
+    state.signalWaves = createSignalWaves(state, summary);
     state.awaitingTurnResult = true;
     render(state, actions);
 
     const currentVersion = stateVersion;
-    const delay = state.scoreBursts.length > 0 ? SCORE_BURST_DURATION : QUICK_ADVANCE_DURATION;
+    const delay =
+      state.scoreBursts.length > 0 || state.signalWaves.length > 0
+        ? SIGNAL_WAVE_DURATION
+        : QUICK_ADVANCE_DURATION;
     turnAdvanceTimer = window.setTimeout(() => {
       if (!state || currentVersion !== stateVersion) {
         return;
       }
       turnAdvanceTimer = null;
       state.scoreBursts = [];
+      state.signalWaves = [];
       completeTurn(state);
       afterTurnChange();
     }, delay);
@@ -2980,7 +3094,11 @@ function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {
     gain.siteBonus += result.siteBonus;
     gain.lengthBonus += result.lengthBonus;
     gain.triangles += 1;
-    resolved.push(result);
+    resolved.push({
+      ...result,
+      points: triangle.points,
+      centroid: getTriangleCentroid(triangle.points)
+    });
 
     fullLengthBonusAvailable = false;
     pending = findCompletedTriangles(state, move.pathEdges);
@@ -2996,6 +3114,35 @@ function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {
     emergency: move.emergency,
     resolved,
     teamGains
+  };
+}
+
+function createSignalWaves(currentState, summary) {
+  return summary.resolved.map((result, index) => {
+    const owner = currentState.players.find((player) => player.id === result.ownerId);
+    return {
+      id: `${Date.now()}-${result.triangleId}-wave-${index}`,
+      points: result.points,
+      centroid: result.centroid,
+      color: owner?.color ?? "#3ad7c7",
+      sideLength: result.sideLength,
+      delay: index * 90
+    };
+  });
+}
+
+function getTriangleCentroid(points) {
+  const sum = points.reduce(
+    (total, point) => ({
+      x: total.x + point.x,
+      y: total.y + point.y
+    }),
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: sum.x / points.length,
+    y: sum.y / points.length
   };
 }
 

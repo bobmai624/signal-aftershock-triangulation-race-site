@@ -608,6 +608,13 @@ p {
   box-shadow: 0 0 20px rgba(243, 154, 56, 0.3);
 }
 
+.board-actions .secondary-button:nth-child(3) {
+  border-color: rgba(232, 94, 79, 0.78);
+  background: linear-gradient(135deg, #ff744f, #e85e4f 55%, #741b18);
+  color: #fff7ef;
+  box-shadow: 0 0 20px rgba(232, 94, 79, 0.28);
+}
+
 .board-panel::before {
   content: "";
   position: absolute;
@@ -685,22 +692,22 @@ p {
 .dice-block {
   left: 50%;
   bottom: 4px;
-  width: min(380px, 34vw);
+  width: min(470px, 40vw);
   transform: translateX(-50%);
-  grid-template-columns: 58px minmax(106px, 0.62fr) 1fr;
+  grid-template-columns: auto 58px minmax(106px, 0.62fr) 1fr;
   align-items: center;
   gap: 7px;
   background: rgba(9, 14, 13, 0.86);
 }
 
 .dice-block .label {
-  grid-column: 1 / -1;
+  grid-column: auto;
   margin-bottom: 0;
 }
 
 .dice-block:not(:has(.debug-dice:not(.hidden))) {
-  width: min(290px, 30vw);
-  grid-template-columns: 58px 1fr;
+  width: min(346px, 32vw);
+  grid-template-columns: auto 58px 1fr;
 }
 
 .mission-progress {
@@ -1490,13 +1497,13 @@ p {
 
   .dice-block {
     bottom: 4px;
-    width: min(340px, 32vw);
-    grid-template-columns: 54px minmax(96px, 0.62fr) 1fr;
+    width: min(430px, 38vw);
+    grid-template-columns: auto 54px minmax(96px, 0.62fr) 1fr;
   }
 
   .dice-block:not(:has(.debug-dice:not(.hidden))) {
-    width: min(252px, 28vw);
-    grid-template-columns: 54px 1fr;
+    width: min(318px, 30vw);
+    grid-template-columns: auto 54px 1fr;
   }
 
   .dice-display {
@@ -1661,6 +1668,7 @@ p {
             <div class="board-actions">
               <button class="secondary-button compact" data-open-help>How to Play</button>
               <button id="restart-game" class="secondary-button compact">Restart</button>
+              <button id="home-game" class="secondary-button compact">Main Menu</button>
             </div>
             <svg id="board-svg" class="board-svg" role="img" aria-label="Triangular signal map"></svg>
           </section>
@@ -2536,7 +2544,7 @@ function renderBoard(state, actions) {
   const svg = document.querySelector("#board-svg");
   svg.innerHTML = "";
   svg.setAttribute("viewBox", state.grid.viewBox);
-  svg.setAttribute("preserveAspectRatio", "xMidYMin meet");
+  svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
 
   const background = createSvg("rect", {
     x: 0,
@@ -2994,8 +3002,12 @@ document.querySelector("#restart-game").addEventListener("click", () => {
   startGame(selectedPlayerCount);
 });
 
+document.querySelector("#home-game").addEventListener("click", () => {
+  returnToStartScreen();
+});
+
 document.querySelector("#play-again").addEventListener("click", () => {
-  showScreen("start");
+  returnToStartScreen();
 });
 
 document.querySelectorAll("[data-open-help]").forEach((button) => {
@@ -3076,6 +3088,17 @@ function startGame(playerCount) {
   closeModal();
   showScreen("game");
   render(state, actions);
+}
+
+function returnToStartScreen() {
+  if (turnAdvanceTimer) {
+    window.clearTimeout(turnAdvanceTimer);
+    turnAdvanceTimer = null;
+  }
+  stateVersion += 1;
+  state = null;
+  closeModal();
+  showScreen("start");
 }
 
 function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {

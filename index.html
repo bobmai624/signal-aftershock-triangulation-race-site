@@ -83,8 +83,8 @@ button:disabled {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: clamp(8px, 1.6vh, 16px);
-  padding: clamp(12px, 2.5vh, 26px) 20px;
+  gap: clamp(5px, 1vh, 10px);
+  padding: clamp(8px, 1.6vh, 18px) 18px;
   text-align: center;
 }
 
@@ -154,8 +154,8 @@ button:disabled {
 .shock-ring {
   left: 50%;
   top: 26%;
-  width: 360px;
-  height: 360px;
+  width: 300px;
+  height: 300px;
   border: 2px solid rgba(57, 227, 255, 0.28);
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(0.8);
@@ -196,9 +196,9 @@ button:disabled {
 }
 
 .game-logo-mark {
-  width: clamp(220px, 31vh, 330px);
-  height: clamp(220px, 31vh, 330px);
-  margin-bottom: clamp(-22px, -2vh, -10px);
+  width: clamp(160px, 24vh, 260px);
+  height: clamp(160px, 24vh, 260px);
+  margin-bottom: clamp(-18px, -2vh, -8px);
   isolation: isolate;
 }
 
@@ -271,8 +271,8 @@ button:disabled {
   border: 1px solid rgba(232, 94, 79, 0.38);
   background: rgba(232, 94, 79, 0.12);
   color: #ffd9bc;
-  padding: 6px 10px;
-  font-size: 0.82rem;
+  padding: 5px 9px;
+  font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -287,7 +287,7 @@ button:disabled {
 .alarm-kicker {
   border: 1px solid rgba(255, 84, 52, 0.4);
   background: rgba(255, 84, 52, 0.1);
-  padding: 7px 12px;
+  padding: 5px 10px;
   color: #ffd1a8;
   box-shadow: 0 0 18px rgba(255, 84, 52, 0.12);
 }
@@ -333,7 +333,7 @@ p {
 .end-screen h1 {
   max-width: 880px;
   margin-bottom: 0;
-  font-size: clamp(2.4rem, 6.7vh, 4.25rem);
+  font-size: clamp(1.75rem, 4.7vh, 3.25rem);
   line-height: 0.95;
 }
 
@@ -352,12 +352,12 @@ p {
 .start-screen h1::after {
   content: "MAYDAY SIGNAL BREACH";
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--danger);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.66rem;
   font-weight: 900;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.22em;
   text-shadow: 0 0 14px rgba(255, 84, 52, 0.65);
   animation: redAlertBlink 1.3s steps(2, end) infinite;
 }
@@ -365,37 +365,38 @@ p {
 .subtitle {
   max-width: 740px;
   color: var(--muted);
-  font-size: clamp(0.92rem, 1.65vh, 1.06rem);
-  line-height: 1.6;
+  font-size: clamp(0.82rem, 1.35vh, 0.98rem);
+  line-height: 1.42;
 }
 
 .story-intro {
-  max-width: 980px;
+  max-width: 860px;
   color: #ffe5c0;
-  font-size: clamp(1rem, 2.15vh, 1.28rem);
+  font-size: clamp(0.88rem, 1.75vh, 1.08rem);
   font-weight: 800;
-  line-height: 1.45;
+  line-height: 1.3;
   text-shadow: 0 0 18px rgba(255, 84, 52, 0.2);
 }
 
 .mission-brief {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  width: min(940px, 100%);
+  gap: 8px;
+  width: min(860px, 100%);
   text-align: left;
 }
 
 .mission-brief > div {
   border-top: 2px solid rgba(58, 215, 199, 0.46);
   background: rgba(23, 29, 27, 0.72);
-  padding: 10px 12px;
+  padding: 8px 10px;
 }
 
 .mission-brief strong {
   display: block;
-  margin: 6px 0 7px;
+  margin: 4px 0 5px;
   color: var(--text);
+  font-size: 0.9rem;
 }
 
 .mission-brief p,
@@ -403,12 +404,12 @@ p {
 .win-explain {
   margin: 0;
   color: var(--muted);
-  line-height: 1.45;
+  line-height: 1.34;
 }
 
 .brief-code {
   color: var(--yellow);
-  font-size: 0.74rem;
+  font-size: 0.66rem;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -421,15 +422,15 @@ p {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .choice-button,
 .primary-button,
 .secondary-button {
-  min-height: 44px;
+  min-height: 40px;
   border-radius: var(--radius);
-  padding: 0 18px;
+  padding: 0 16px;
   color: var(--text);
 }
 
@@ -451,11 +452,11 @@ p {
 }
 
 #roll-dice {
-  min-height: 64px;
+  min-height: 42px;
   border: 2px solid rgba(255, 209, 102, 0.42);
   background: linear-gradient(135deg, #ff744f 0%, #e85e4f 48%, #a91f19 100%);
   color: #fff7ef;
-  font-size: 1.18rem;
+  font-size: 0.88rem;
   font-weight: 950;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
   box-shadow:
@@ -480,8 +481,8 @@ p {
 .game-screen {
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: 6px;
-  padding: 8px 14px 12px;
+  gap: 4px;
+  padding: 6px 12px 10px;
 }
 
 .game-header {
@@ -489,14 +490,14 @@ p {
   align-items: center;
   justify-content: flex-start;
   gap: 20px;
-  min-height: 84px;
+  min-height: 72px;
 }
 
 .game-header h1 {
   margin: 4px 0 0;
   color: #fff7ef;
   font-family: Impact, "Arial Black", sans-serif;
-  font-size: clamp(2.1rem, 3.5vw, 3.45rem);
+  font-size: clamp(1.8rem, 3vw, 2.9rem);
   letter-spacing: 0.03em;
   line-height: 0.92;
   text-shadow:
@@ -515,13 +516,13 @@ p {
   position: relative;
   display: grid;
   place-items: center;
-  width: 88px;
-  height: 78px;
+  width: 74px;
+  height: 66px;
 }
 
 .mini-logo img {
-  width: 88px;
-  height: 78px;
+  width: 74px;
+  height: 66px;
   object-fit: contain;
   opacity: 0.9;
   filter:
@@ -620,11 +621,12 @@ p {
 
 .board-svg {
   width: 100%;
-  height: 100%;
+  height: calc(100% + 26px);
   min-height: 0;
   display: block;
   position: relative;
   z-index: 1;
+  transform: translateY(-26px);
 }
 
 .control-panel {
@@ -641,53 +643,53 @@ p {
 
 .status-block {
   position: absolute;
-  width: min(286px, 28vw);
+  width: min(252px, 24vw);
   border: 1px solid rgba(218, 208, 181, 0.16);
   border-radius: var(--radius);
   background: rgba(13, 17, 15, 0.78);
-  padding: 12px;
+  padding: 9px;
   pointer-events: auto;
   backdrop-filter: blur(8px);
 }
 
 .mission-status {
-  top: 12px;
-  right: 12px;
+  top: 10px;
+  right: 10px;
 }
 
 .active-status {
-  top: 430px;
-  left: 14px;
+  top: 48%;
+  left: 12px;
 }
 
 .score-status {
-  left: 14px;
-  top: 602px;
+  left: 12px;
+  top: calc(48% + 126px);
 }
 
 .turn-status {
-  right: 14px;
-  top: 124px;
+  right: 10px;
+  top: 112px;
 }
 
 .victory-rules {
-  right: 14px;
-  top: 506px;
+  right: 10px;
+  top: 458px;
 }
 
 .site-legend {
-  right: 14px;
-  top: 284px;
+  right: 10px;
+  top: 252px;
 }
 
 .dice-block {
   left: 50%;
-  bottom: 14px;
-  width: min(560px, 46vw);
+  bottom: 4px;
+  width: min(380px, 34vw);
   transform: translateX(-50%);
-  grid-template-columns: auto minmax(150px, 0.7fr) 1fr;
+  grid-template-columns: 58px minmax(106px, 0.62fr) 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 7px;
   background: rgba(9, 14, 13, 0.86);
 }
 
@@ -696,13 +698,18 @@ p {
   margin-bottom: 0;
 }
 
+.dice-block:not(:has(.debug-dice:not(.hidden))) {
+  width: min(290px, 30vw);
+  grid-template-columns: 58px 1fr;
+}
+
 .mission-progress {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .progress-bar {
-  height: 10px;
+  height: 8px;
   overflow: hidden;
   border: 1px solid rgba(218, 208, 181, 0.22);
   border-radius: 999px;
@@ -717,16 +724,16 @@ p {
 .progress-meta {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 9px;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.74rem;
 }
 
 .label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   color: var(--muted);
-  font-size: 0.84rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -735,40 +742,40 @@ p {
 .current-player {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 1.34rem;
+  gap: 9px;
+  font-size: 1.06rem;
   font-weight: 800;
 }
 
 .team-dot {
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   box-shadow: 0 0 16px currentColor;
 }
 
 .instruction-text {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
-  font-size: 1.02rem;
-  line-height: 1.42;
+  font-size: 0.83rem;
+  line-height: 1.32;
 }
 
 .dice-block {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .dice-display {
   display: grid;
   place-items: center;
-  width: 98px;
-  height: 98px;
+  width: 58px;
+  height: 58px;
   border: 2px solid rgba(232, 94, 79, 0.58);
   border-radius: var(--radius);
   background: #1d0f0c;
   color: var(--danger);
-  font-size: 2.85rem;
+  font-size: 1.72rem;
   font-weight: 900;
   text-shadow: 0 0 14px rgba(232, 94, 79, 0.58);
 }
@@ -793,12 +800,12 @@ p {
   display: grid;
   gap: 6px;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.72rem;
   text-align: left;
 }
 
 .debug-dice select {
-  min-height: 36px;
+  min-height: 30px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #151a17;
@@ -810,7 +817,7 @@ p {
 .turn-summary,
 .final-scores {
   display: grid;
-  gap: 10px;
+  gap: 7px;
 }
 
 .score-row,
@@ -818,12 +825,12 @@ p {
 .final-row {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 12px;
+  gap: 9px;
   align-items: center;
-  min-height: 44px;
+  min-height: 32px;
   border-bottom: 1px solid rgba(218, 208, 181, 0.12);
   color: var(--text);
-  font-size: 1.05rem;
+  font-size: 0.82rem;
 }
 
 .score-row:last-child,
@@ -840,12 +847,12 @@ p {
 }
 
 .score-value {
-  font-size: 1.45rem;
+  font-size: 1.1rem;
   font-weight: 900;
 }
 
 .turn-row strong {
-  font-size: 1.2rem;
+  font-size: 0.96rem;
 }
 
 .game-log {
@@ -865,36 +872,36 @@ p {
 }
 
 .victory-rules p + p {
-  margin-top: 7px;
+  margin-top: 5px;
 }
 
 .victory-rules strong {
   color: var(--yellow);
-  font-size: 1.08rem;
+  font-size: 0.9rem;
 }
 
 .site-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  gap: 5px;
 }
 
 .site-grid span {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
   border: 1px solid rgba(218, 208, 181, 0.14);
   border-radius: 6px;
-  padding: 8px 9px;
+  padding: 6px 7px;
   color: var(--text);
   background: rgba(0, 0, 0, 0.16);
-  font-size: 0.92rem;
+  font-size: 0.76rem;
   font-weight: 800;
 }
 
 .legend-icon {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   flex: 0 0 auto;
   background: var(--yellow);
   filter: drop-shadow(0 0 5px rgba(255, 209, 102, 0.35));
@@ -1352,30 +1359,30 @@ p {
 @media (max-height: 820px) and (min-width: 981px) {
   .start-screen,
   .end-screen {
-    gap: 8px;
-    padding: 10px 18px;
+    gap: 5px;
+    padding: 8px 16px;
   }
 
   .game-logo-mark {
-    width: clamp(190px, 27vh, 250px);
-    height: clamp(190px, 27vh, 250px);
-    margin-bottom: -20px;
+    width: clamp(150px, 22vh, 205px);
+    height: clamp(150px, 22vh, 205px);
+    margin-bottom: -15px;
   }
 
   .start-screen h1,
   .end-screen h1 {
-    font-size: clamp(2rem, 5.8vh, 3.3rem);
+    font-size: clamp(1.55rem, 4.2vh, 2.65rem);
   }
 
   .start-screen h1::after {
-    margin-top: 4px;
-    font-size: 0.72rem;
-    letter-spacing: 0.24em;
+    margin-top: 3px;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
   }
 
   .story-intro {
-    font-size: clamp(0.92rem, 1.95vh, 1.06rem);
-    line-height: 1.34;
+    font-size: clamp(0.82rem, 1.55vh, 0.96rem);
+    line-height: 1.25;
   }
 
   .incident-code,
@@ -1396,8 +1403,8 @@ p {
   }
 
   .mission-brief p {
-    font-size: 0.86rem;
-    line-height: 1.32;
+    font-size: 0.75rem;
+    line-height: 1.25;
   }
 
   .choice-button,
@@ -1412,22 +1419,22 @@ p {
   }
 
   .game-header {
-    min-height: 68px;
+    min-height: 58px;
   }
 
   .game-header h1 {
-    font-size: clamp(1.7rem, 2.8vw, 2.45rem);
+    font-size: clamp(1.45rem, 2.35vw, 2.1rem);
   }
 
   .mini-logo,
   .mini-logo img {
-    width: 70px;
-    height: 62px;
+    width: 60px;
+    height: 54px;
   }
 
   .status-block {
-    width: min(270px, 26vw);
-    padding: 9px;
+    width: min(230px, 23vw);
+    padding: 7px;
   }
 
   .label {
@@ -1436,23 +1443,23 @@ p {
   }
 
   .active-status {
-    top: 310px;
+    top: 48%;
   }
 
   .score-status {
-    top: 452px;
+    top: calc(48% + 108px);
   }
 
   .turn-status {
-    top: 114px;
+    top: 96px;
   }
 
   .site-legend {
-    top: 262px;
+    top: 220px;
   }
 
   .victory-rules {
-    top: 438px;
+    top: 396px;
   }
 
   .instruction-text,
@@ -1463,39 +1470,44 @@ p {
   }
 
   .current-player {
-    font-size: 1.08rem;
+    font-size: 0.96rem;
   }
 
   .score-row,
   .turn-row,
   .final-row {
-    min-height: 34px;
-    font-size: 0.92rem;
+    min-height: 28px;
+    font-size: 0.76rem;
   }
 
   .score-value {
-    font-size: 1.22rem;
-  }
-
-  .turn-row strong {
     font-size: 1rem;
   }
 
+  .turn-row strong {
+    font-size: 0.86rem;
+  }
+
   .dice-block {
-    bottom: 8px;
-    width: min(500px, 42vw);
-    grid-template-columns: 82px minmax(134px, 0.7fr) 1fr;
+    bottom: 4px;
+    width: min(340px, 32vw);
+    grid-template-columns: 54px minmax(96px, 0.62fr) 1fr;
+  }
+
+  .dice-block:not(:has(.debug-dice:not(.hidden))) {
+    width: min(252px, 28vw);
+    grid-template-columns: 54px 1fr;
   }
 
   .dice-display {
-    width: 82px;
-    height: 82px;
-    font-size: 2.32rem;
+    width: 54px;
+    height: 54px;
+    font-size: 1.58rem;
   }
 
   #roll-dice {
-    min-height: 56px;
-    font-size: 1.04rem;
+    min-height: 38px;
+    font-size: 0.82rem;
   }
 
   .debug-dice select {
@@ -1530,13 +1542,13 @@ p {
   }
 
   .game-logo-mark {
-    width: 360px;
-    height: 360px;
+    width: min(260px, 38vh);
+    height: min(260px, 38vh);
   }
 
   .start-screen h1,
   .end-screen h1 {
-    font-size: 3.7rem;
+    font-size: 2.6rem;
   }
 }
 
@@ -1566,13 +1578,13 @@ p {
   }
 
   .game-logo-mark {
-    width: 280px;
-    height: 280px;
-    margin-bottom: -16px;
+    width: min(210px, 34vh);
+    height: min(210px, 34vh);
+    margin-bottom: -12px;
   }
 
   .story-intro {
-    font-size: 1.08rem;
+    font-size: 0.9rem;
   }
 
   .start-screen h1::after {

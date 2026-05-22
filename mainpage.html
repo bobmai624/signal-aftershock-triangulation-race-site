@@ -2040,7 +2040,7 @@ const CONFIG = {
   spacing: 76,
   marginX: 150,
   marginY: 78,
-  maxTriangleSide: 4,
+  maxTriangleSide: 6,
   claimThreshold: 0.7,
   players: [
     {
@@ -2647,8 +2647,17 @@ function findCompletedTriangles(state, newEdges) {
       if (b.sideLength !== a.sideLength) {
         return b.sideLength - a.sideLength;
       }
+      const bArea = getUnclaimedTriangleArea(state, b);
+      const aArea = getUnclaimedTriangleArea(state, a);
+      if (bArea !== aArea) {
+        return bArea - aArea;
+      }
       return a.id.localeCompare(b.id);
     });
+}
+
+function getUnclaimedTriangleArea(state, triangle) {
+  return triangle.innerSmallCells.filter((cellId) => !state.cellOwners.has(cellId)).length;
 }
 
 function completeTurn(state) {
@@ -2662,6 +2671,7 @@ function completeTurn(state) {
   state.legalMoves = [];
   state.awaitingTurnResult = false;
   state.pendingResolution = null;
+  state.lastClaimedCells = new Set();
 
   const endReason = getEndReason(state);
   if (endReason) {
@@ -2781,7 +2791,7 @@ function resolveTriangle(state, triangle, closingPlayerId, includeLengthBonus = 
   const owner = getPlayer(state, preview.ownerId);
   const claimedCells = triangle.innerSmallCells.filter((cellId) => !state.cellOwners.has(cellId));
 
-  state.lastClaimedCells = new Set(claimedCells);
+  state.lastClaimedCells = new Set([...state.lastClaimedCells, ...claimedCells]);
 
   for (const cellId of claimedCells) {
     state.cellOwners.set(cellId, owner.id);
@@ -3451,6 +3461,7 @@ function returnToStartScreen() {
 }
 
 function resolveMoveAutomatically(move, closingPlayerId, activePlayerName) {
+  state.lastClaimedCells = new Set();
   const resolved = [];
   const teamGains = Object.fromEntries(
     state.players.map((player) => [

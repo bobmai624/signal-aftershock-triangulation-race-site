@@ -636,6 +636,80 @@ p {
   transform: translateY(-26px);
 }
 
+.game-result-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 80px 300px 86px 300px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(255, 209, 102, 0.14), transparent 26%),
+    rgba(3, 7, 8, 0.28);
+  pointer-events: auto;
+}
+
+.game-result-card {
+  width: min(560px, 100%);
+  border: 1px solid rgba(255, 209, 102, 0.36);
+  border-radius: var(--radius);
+  background: rgba(10, 14, 13, 0.9);
+  padding: 18px;
+  box-shadow:
+    0 0 0 1px rgba(58, 215, 199, 0.12),
+    0 0 34px rgba(255, 209, 102, 0.16),
+    0 18px 60px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+.game-result-card h2 {
+  margin: 4px 0 8px;
+  color: #fff7ef;
+  font-family: Impact, "Arial Black", sans-serif;
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-shadow:
+    0 3px 0 #46140a,
+    0 0 14px rgba(255, 84, 52, 0.48),
+    0 0 28px rgba(57, 227, 255, 0.24);
+}
+
+.result-reason,
+.map-win-explain {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.map-win-explain {
+  margin-top: 6px;
+  color: #ffe5c0;
+  font-weight: 800;
+}
+
+.map-final-scores {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.result-actions .primary-button,
+.result-actions .secondary-button {
+  flex: 1;
+  min-height: 44px;
+  font-weight: 900;
+}
+
 .control-panel {
   position: absolute;
   inset: 0;
@@ -1671,6 +1745,19 @@ p {
               <button id="home-game" class="secondary-button compact">Main Menu</button>
             </div>
             <svg id="board-svg" class="board-svg" role="img" aria-label="Triangular signal map"></svg>
+            <div id="game-result-overlay" class="game-result-overlay hidden" aria-live="polite">
+              <section class="game-result-card" aria-label="Final game result">
+                <p class="eyebrow">Coverage secured</p>
+                <h2 id="map-winner-title">Winner</h2>
+                <p id="map-end-reason" class="result-reason"></p>
+                <p class="map-win-explain">Coverage Score = claimed area + critical-site bonuses + full-length triangle closures.</p>
+                <div id="map-final-scores" class="final-scores map-final-scores"></div>
+                <div class="result-actions">
+                  <button id="final-restart-game" class="primary-button">Play Again</button>
+                  <button id="final-home-game" class="secondary-button">Main Menu</button>
+                </div>
+              </section>
+            </div>
           </section>
 
           <aside class="control-panel">
@@ -2825,18 +2912,12 @@ function renderPanel(state) {
 }
 
 function renderEndScreen(state, winnerSummary) {
-  const title = document.querySelector("#winner-title");
-  if (winnerSummary.winners.length === 1) {
-    title.textContent = `${winnerSummary.winners[0].name} wins`;
-  } else {
-    title.textContent = "Shared victory";
-  }
-
-  const endReason = document.querySelector("#end-reason");
-  endReason.textContent = `End reason: ${state.endReason ?? "mission complete"}.`;
-
-  const finalScores = document.querySelector("#final-scores");
-  finalScores.innerHTML = winnerSummary.sorted
+  const winnerText =
+    winnerSummary.winners.length === 1
+      ? `${winnerSummary.winners[0].name} wins`
+      : "Shared victory";
+  const reasonText = `End reason: ${state.endReason ?? "mission complete"}.`;
+  const scoreRows = winnerSummary.sorted
     .map(
       (player) => `
         <div class="final-row">
@@ -2849,6 +2930,19 @@ function renderEndScreen(state, winnerSummary) {
       `
     )
     .join("");
+
+  const title = document.querySelector("#winner-title");
+  title.textContent = winnerText;
+
+  const endReason = document.querySelector("#end-reason");
+  endReason.textContent = reasonText;
+
+  const finalScores = document.querySelector("#final-scores");
+  finalScores.innerHTML = scoreRows;
+
+  document.querySelector("#map-winner-title").textContent = winnerText;
+  document.querySelector("#map-end-reason").textContent = reasonText;
+  document.querySelector("#map-final-scores").innerHTML = scoreRows;
 }
 
 function createSvg(tag, attributes) {
@@ -3002,7 +3096,15 @@ document.querySelector("#restart-game").addEventListener("click", () => {
   startGame(selectedPlayerCount);
 });
 
+document.querySelector("#final-restart-game").addEventListener("click", () => {
+  startGame(selectedPlayerCount);
+});
+
 document.querySelector("#home-game").addEventListener("click", () => {
+  returnToStartScreen();
+});
+
+document.querySelector("#final-home-game").addEventListener("click", () => {
   returnToStartScreen();
 });
 
@@ -3086,6 +3188,7 @@ function startGame(playerCount) {
   selectedPlayerCount = playerCount;
   state = createGameState(playerCount);
   closeModal();
+  hideGameResultOverlay();
   showScreen("game");
   render(state, actions);
 }
@@ -3098,6 +3201,7 @@ function returnToStartScreen() {
   stateVersion += 1;
   state = null;
   closeModal();
+  hideGameResultOverlay();
   showScreen("start");
 }
 
@@ -3230,8 +3334,16 @@ function afterTurnChange() {
   if (state.gameOver) {
     const summary = getWinnerSummary(state);
     renderEndScreen(state, summary);
-    showScreen("end");
+    showGameResultOverlay();
   }
+}
+
+function showGameResultOverlay() {
+  document.querySelector("#game-result-overlay").classList.remove("hidden");
+}
+
+function hideGameResultOverlay() {
+  document.querySelector("#game-result-overlay").classList.add("hidden");
 }
 
 showScreen("start");
